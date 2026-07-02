@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * OSIRIS — Earthquake Data API
+ * OSINT Platform — Earthquake Data API
  * Fetches real-time seismic events from USGS (last 24h, M2.5+)
  * No API key required
  */
@@ -54,4 +54,3 @@ export async function GET() {
     return NextResponse.json({ earthquakes: [], error: 'Failed to fetch earthquake data' }, { status: 500 });
   }
 }
-

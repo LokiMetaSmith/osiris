@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * OSIRIS — Live News Feeds v3
+ * OSINT Platform — Live News Feeds v3
  * embed_allowed: true  → can be iframed directly (YouTube allows it for these channels)
  * embed_allowed: false → YouTube/broadcaster blocks embedding; open externally instead
  *
@@ -48,4 +48,3 @@ export async function GET() {
     headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=172800' },
   });
 }
-

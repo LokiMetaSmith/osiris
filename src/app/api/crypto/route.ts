@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd', {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd', {
       next: { revalidate: 60 } // cache for 60 seconds
     });
     
@@ -15,7 +15,6 @@ export async function GET() {
     
     if (data.bitcoin?.usd) prices.push({ symbol: 'BTC', price: data.bitcoin.usd });
     if (data.ethereum?.usd) prices.push({ symbol: 'ETH', price: data.ethereum.usd });
-    if (data.solana?.usd) prices.push({ symbol: 'SOL', price: data.solana.usd });
 
     return NextResponse.json(prices);
   } catch (error) {

@@ -1,5 +1,5 @@
-# Osiris Global Intelligence Platform
-# https://osirisai.live
+# OSINT Platform Global Intelligence Platform
+# https://osint-platform.local
 
 User-agent: *
 Allow: /
@@ -11,7 +11,7 @@ Disallow: /api/osint/*
 Allow: /api/health
 
 # Sitemap
-Sitemap: https://osirisai.live/sitemap.xml
+Sitemap: https://osint-platform.local/sitemap.xml
 
 # Crawl-delay for respectful indexing
 Crawl-delay: 10

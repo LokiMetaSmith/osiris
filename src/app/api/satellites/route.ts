@@ -5,7 +5,7 @@ import { stealthFetch } from '@/lib/stealthFetch';
 export const maxDuration = 60;
 
 /**
- * OSIRIS — Satellite Tracking API
+ * OSINT Platform — Satellite Tracking API
  * Fetches TLE data from multiple sources with fallbacks
  * Computes real-time positions using simplified SGP4
  */
@@ -137,7 +137,7 @@ const CT = 'https://celestrak.org/NORAD/elements/gp.php?GROUP=';
 const FMT = '&FORMAT=tle';
 const CELESTRAK_GROUPS = [
   // Full catalogs
-  `${CT}active${FMT}`, 
+  `${CT}active${FMT}`,
   // Use supplemental feed for Starlink to avoid strict rate limits on the primary group
   `https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=tle`,
   // Navigation (GPS, GLONASS, Galileo, BeiDou)
@@ -234,7 +234,7 @@ async function fetchCelesTrakGroup(url: string): Promise<{ name: string; line1: 
     const res = await fetch(url, {
       signal: AbortSignal.timeout(30000),
       cache: 'no-store',
-      headers: { 'User-Agent': 'OSIRIS/4.2 (satellite-tracker)' },
+      headers: { 'User-Agent': 'OSINT Platform/4.2 (satellite-tracker)' },
     });
     if (!res.ok) return [];
     const text = await res.text();
@@ -253,15 +253,15 @@ export async function GET() {
     let source = 'memory-cache';
 
     if (globalCachedSats.length === 0 || globalCachedSats.length < 5000 || nowTime - globalCacheTime > 3600000) { // refresh if empty, too few, or stale
-      
+
       // Primary: Fetch multiple CelesTrak groups in parallel
       const groupResults = await Promise.allSettled(
         CELESTRAK_GROUPS.map(url => fetchCelesTrakGroup(url))
       );
-      
+
       const seen = new Set<string>();
       const merged: { name: string; line1: string; line2: string }[] = [];
-      
+
       // 1. Add all newly fetched satellites
       for (const result of groupResults) {
         if (result.status === 'fulfilled') {
@@ -274,7 +274,7 @@ export async function GET() {
           }
         }
       }
-      
+
       // 2. Backfill with cached satellites that failed to fetch this time (due to rate limits)
       let backfilled = 0;
       for (const sat of globalCachedSats) {
@@ -285,7 +285,7 @@ export async function GET() {
           backfilled++;
         }
       }
-      
+
       if (merged.length > 500) {
         globalCachedSats = merged;
         globalCacheTime = nowTime;
@@ -302,7 +302,7 @@ export async function GET() {
             signal: AbortSignal.timeout(15000),
             headers: { 'Accept': 'application/json' },
           });
-          
+
           if (res.ok) {
             const data = await res.json();
             const fetchedSats: any[] = [];
@@ -320,7 +320,7 @@ export async function GET() {
                 });
               }
             }
-            
+
             if (fetchedSats.length > 0) {
               globalCachedSats = fetchedSats;
               globalCacheTime = nowTime;
@@ -349,12 +349,12 @@ export async function GET() {
       if (!pos) continue;
 
       const classification = classifySatellite(sat.name);
-      
+
       // High-level category for sub-layer filtering
       let category = 'other';
       const m = classification.mission;
       const upperName = sat.name.toUpperCase();
-      
+
       // Debris detection
       if (upperName.includes(' DEB') || upperName.includes('DEBRIS') || upperName.includes(' R/B')) {
         category = 'other'; // debris goes to "other" category
@@ -376,8 +376,8 @@ export async function GET() {
       });
     }
 
-    const cacheControl = satellites.length < 10 
-      ? 'no-store, max-age=0' 
+    const cacheControl = satellites.length < 10
+      ? 'no-store, max-age=0'
       : 'public, s-maxage=120, stale-while-revalidate=300';
 
     // Count by category
@@ -403,4 +403,3 @@ export async function GET() {
     return NextResponse.json({ satellites: [], error: 'Failed to fetch satellite data' }, { status: 500 });
   }
 }
-
