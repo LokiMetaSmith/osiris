@@ -52,13 +52,12 @@ export default function GlobalStatusBar() {
     const fetchData = async () => {
       try {
         const [cryptoRes, quakeRes] = await Promise.allSettled([
-          fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd')
+          fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd')
             .then(res => res.ok ? res.json() : Promise.reject('CoinGecko error'))
             .then(data => {
               const prices: CryptoPrice[] = [];
               if (data.bitcoin?.usd) prices.push({ symbol: 'BTC', price: data.bitcoin.usd });
               if (data.ethereum?.usd) prices.push({ symbol: 'ETH', price: data.ethereum.usd });
-              if (data.solana?.usd) prices.push({ symbol: 'SOL', price: data.solana.usd });
               return { ok: true, json: async () => prices };
             }),
           fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson')
@@ -96,7 +95,7 @@ export default function GlobalStatusBar() {
             .slice(0, 5);
           setQuakes(majorQuakes);
         }
-      } catch (e) { console.warn('[OSIRIS] Suppressed error:', e instanceof Error ? e.message : e); }
+      } catch (e) { console.warn('[OSINT Platform] Suppressed error:', e instanceof Error ? e.message : e); }
     };
     fetchData();
     const iv = setInterval(fetchData, 60000); // 1 min (to keep fresh)

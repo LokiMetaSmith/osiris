@@ -1,6 +1,6 @@
-name: osiris
+name: osint
 services:
-  osiris:
+  osint:
     # Pulls the prebuilt image from GitHub Container Registry. The `build:`
     # block is kept as a fallback: `docker compose up -d` uses the registry
     # image if present/pullable, otherwise builds locally from the Dockerfile.
@@ -8,10 +8,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: osiris
-    # Host port is configurable via OSIRIS_PORT in .env (defaults to 3000).
+    container_name: osint
+    # Host port is configurable via OSINT_PORT in .env (defaults to 3000).
     ports:
-      - "${OSIRIS_PORT:-3000}:3000"
+      - "${OSINT_PORT:-3000}:3000"
     # Optional API keys / scanner backend — copy .env.template to .env and
     # fill in what you need. Missing file is ignored (keyless feeds still work).
     env_file:
@@ -29,25 +29,25 @@ services:
       - default
       - umami_default
 
-  osiris-cache:
+  osint-cache:
     image: nginx:alpine
-    container_name: osiris-cache
+    container_name: osint-cache
     ports:
       - "8080:8080"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - nginx-cache:/var/cache/nginx
     depends_on:
-      - osiris
+      - osint
     restart: unless-stopped
     networks:
       - default
 
-  osiris-intel:
+  osint-intel:
     build:
       context: ./intel
       dockerfile: Dockerfile
-    container_name: osiris-intel
+    container_name: osint-intel
     ports:
       - "4000:4000"
     restart: unless-stopped
@@ -66,13 +66,13 @@ x-casaos:
   architectures:
     - amd64
     - arm64
-  main: osiris
+  main: osint
   author: simplifaisoul
   developer: simplifaisoul
   category: Network
   description:
     en_us: >-
-      OSIRIS is a production-grade open-source OSINT situational-awareness
+      OSINT Platform is a production-grade open-source OSINT situational-awareness
       dashboard. It aggregates real-time global intelligence across aviation,
       maritime, CCTV networks, seismic activity, wildfires, news feeds,
       weather, space weather, cyber threats (CVEs) and conflict zones into a
@@ -81,11 +81,11 @@ x-casaos:
   tagline:
     en_us: Real-time global OSINT intelligence dashboard
   title:
-    en_us: OSIRIS
-  icon: https://raw.githubusercontent.com/Aiacos/osiris/master/public/casaos-icon.png
-  thumbnail: https://raw.githubusercontent.com/Aiacos/osiris/master/public/og-image.png
+    en_us: OSINT Platform
+  icon: https://raw.githubusercontent.com/Aiacos/osint/master/public/casaos-icon.png
+  thumbnail: https://raw.githubusercontent.com/Aiacos/osint/master/public/og-image.png
   screenshot_link:
-    - https://raw.githubusercontent.com/Aiacos/osiris/master/public/og-image.png
+    - https://raw.githubusercontent.com/Aiacos/osint/master/public/og-image.png
   scheme: http
   hostname: ""
   port_map: "3000"
@@ -97,7 +97,7 @@ x-casaos:
         en_us: "(Optional) RECON scanner backend URL, e.g. http://scanner:7700"
     - container: SCANNER_KEY
       description:
-        en_us: "(Optional) RECON scanner shared secret (must match backend OSIRIS_KEY)."
+        en_us: "(Optional) RECON scanner shared secret (must match backend OSINT Platform_KEY)."
     - container: FIRMS_API_KEY
       description:
         en_us: "(Optional) NASA FIRMS API key for active-fire data."

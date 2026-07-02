@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 /**
- * OSIRIS — Ukraine Frontline API
+ * OSINT Platform — Ukraine Frontline API
  * Fetches live warfront GeoJSON from DeepState Map
  */
 
@@ -32,4 +32,3 @@ export async function GET() {
     return NextResponse.json({ frontlines: null, error: 'Failed to fetch frontline data' }, { status: 500 });
   }
 }
-

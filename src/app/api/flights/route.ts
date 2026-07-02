@@ -6,7 +6,7 @@ import { stealthFetch } from '@/lib/stealthFetch';
 export const maxDuration = 60;
 
 /**
- * OSIRIS — Flight Data API
+ * OSINT Platform — Flight Data API
  * Fetches real-time aircraft positions from adsb.lol (no API key required)
  * Covers 6 global regions for maximum coverage
  */
@@ -185,7 +185,7 @@ async function getOpenSkyToken(): Promise<string | null> {
       }
     );
     if (!res.ok) {
-      console.warn('[OSIRIS] OpenSky token request failed:', res.status);
+      console.warn('[OSINT Platform] OpenSky token request failed:', res.status);
       return null;
     }
     const data = await res.json();
@@ -194,7 +194,7 @@ async function getOpenSkyToken(): Promise<string | null> {
     osTokenExpiry = Date.now() + ((data.expires_in || 1800) - 60) * 1000;
     return osToken;
   } catch (e) {
-    console.warn('[OSIRIS] OpenSky token error:', e);
+    console.warn('[OSINT Platform] OpenSky token error:', e);
     return null;
   }
 }
@@ -282,7 +282,7 @@ export async function GET() {
     if (osRes.status === 'fulfilled' && osRes.value.status === 429) {
       // Rate-limited — back off so we don't keep the IP throttled.
       openSkyCooldownUntil = Date.now() + OPENSKY_COOLDOWN;
-      console.warn('[OSIRIS] OpenSky returned 429 — cooling down for 15 min, using adsb.lol fallback');
+      console.warn('[OSINT Platform] OpenSky returned 429 — cooling down for 15 min, using adsb.lol fallback');
     }
     if (osRes.status === 'fulfilled' && osRes.value.ok) {
       try {
@@ -312,7 +312,7 @@ export async function GET() {
 
     // Fallback: If OpenSky failed (429 rate limit / blocked datacenter IP), fan out to adsb.lol regions
     if (!openSkyWorked) {
-      console.warn('[OSIRIS] OpenSky unavailable — falling back to adsb.lol regional fetch');
+      console.warn('[OSINT Platform] OpenSky unavailable — falling back to adsb.lol regional fetch');
       const regionResults = await Promise.allSettled(REGIONS.map(r => fetchRegion(r)));
       for (const result of regionResults) {
         if (result.status === 'fulfilled') {
@@ -376,8 +376,8 @@ export async function GET() {
     lastFetchTime = Date.now();
     fetchPromise = null;
 
-    const cacheControl = data.total < 100 
-      ? 'no-store, max-age=0' 
+    const cacheControl = data.total < 100
+      ? 'no-store, max-age=0'
       : 'public, s-maxage=30, stale-while-revalidate=60';
 
     return NextResponse.json(data, {
@@ -422,4 +422,3 @@ function aggregateJamming(points: any[], threshold: number) {
       count: z.count,
     }));
 }
-
