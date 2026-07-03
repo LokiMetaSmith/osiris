@@ -1,0 +1,139 @@
+core.workflow(
+    name = "pull_upstream",
+    origin = git.origin(
+        url = "https://github.com/simplifaisoul/osiris.git",
+        ref = "master",
+    ),
+    destination = git.destination(
+        url = "file:///tmp/local_osint_repo",
+        fetch = "master",
+        push = "master",
+    ),
+    authoring = authoring.pass_thru("Copybara <copybara@example.com>"),
+    transformations = [
+        core.move("public/osiris-icon.png", "public/osint-icon.png"),
+        core.move("src/components/OsirisMap.tsx", "src/components/OsintMap.tsx"),
+        core.replace(
+            before = "OSIRIS_PORT",
+            after = "OSINT_PORT",
+        ),
+        core.replace(
+            before = "OSIRIS_TELEGRAM_CHANNELS",
+            after = "OSINT_TELEGRAM_CHANNELS",
+        ),
+        core.replace(
+            before = "osirisai.live",
+            after = "osint-platform.local",
+        ),
+        core.replace(
+            before = "osirisai",
+            after = "osintplatform",
+        ),
+        core.replace(
+            before = "osiris-pulse",
+            after = "osint-pulse",
+        ),
+        core.replace(
+            before = "osiris-glow",
+            after = "osint-glow",
+        ),
+        core.replace(
+            before = "osiris-scan",
+            after = "osint-scan",
+        ),
+        core.replace(
+            before = "osiris-rotate",
+            after = "osint-rotate",
+        ),
+        core.replace(
+            before = "osiris-cache",
+            after = "osint-cache",
+        ),
+        core.replace(
+            before = "osiris-intel",
+            after = "osint-intel",
+        ),
+        core.replace(
+            before = "Osiris",
+            after = "OSINT Platform",
+        ),
+        core.replace(
+            before = "OSIRIS",
+            after = "OSINT Platform",
+        ),
+        core.replace(
+            before = "osiris",
+            after = "osint",
+        ),
+    ],
+)
+
+core.workflow(
+    name = "push_upstream",
+    origin = git.origin(
+        url = "file:///tmp/local_osint_repo",
+        ref = "master",
+    ),
+    destination = git.destination(
+        url = "https://github.com/simplifaisoul/osiris.git",
+        fetch = "master",
+        push = "master",
+    ),
+    authoring = authoring.pass_thru("Copybara <copybara@example.com>"),
+    transformations = [
+        core.move("public/osint-icon.png", "public/osiris-icon.png"),
+        core.move("src/components/OsintMap.tsx", "src/components/OsirisMap.tsx"),
+        core.replace(
+            before = "OSINT_PORT",
+            after = "OSIRIS_PORT",
+        ),
+        core.replace(
+            before = "OSINT_TELEGRAM_CHANNELS",
+            after = "OSIRIS_TELEGRAM_CHANNELS",
+        ),
+        core.replace(
+            before = "osint-platform.local",
+            after = "osirisai.live",
+        ),
+        core.replace(
+            before = "osintplatform",
+            after = "osirisai",
+        ),
+        core.replace(
+            before = "osint-pulse",
+            after = "osiris-pulse",
+        ),
+        core.replace(
+            before = "osint-glow",
+            after = "osiris-glow",
+        ),
+        core.replace(
+            before = "osint-scan",
+            after = "osiris-scan",
+        ),
+        core.replace(
+            before = "osint-rotate",
+            after = "osiris-rotate",
+        ),
+        core.replace(
+            before = "osint-cache",
+            after = "osiris-cache",
+        ),
+        core.replace(
+            before = "osint-intel",
+            after = "osiris-intel",
+        ),
+        core.replace(
+            before = "OSINT Platform",
+            after = "Osiris",
+        ),
+        core.replace(
+            before = "OSINT PLATFORM",
+            after = "OSIRIS",
+        ),
+        core.replace(
+            before = "osint",
+            after = "osiris",
+        ),
+    ],
+)
