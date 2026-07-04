@@ -180,8 +180,9 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
       createDot(map, 'dot-green', isGhost ? phantomPurple : '#26A69A', 10);
       createDot(map, 'dot-fire', isGhost ? phantomPurple : '#E65100', 10);
       createDot(map, 'dot-cctv', cameraColor, 10);
+      createIcon(map, 'drone-icon', '#FFEA00', 20);
 
-      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv','fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'sdk-entities', 'sdk-links', 'malware-nodes', 'network-mesh'];
+      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv', 'sensors', 'fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'sdk-entities', 'sdk-links', 'malware-nodes', 'network-mesh'];
       sources.forEach(s => map.addSource(s, { type: 'geojson', data: EMPTY_FC }));
 
       // Warning icon generator (parameterized — eliminates 3x copy-paste)
@@ -257,6 +258,21 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
         'text-field': ['get','name'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
         'text-offset': [0, 1.8], 'text-max-width': 12, 'text-allow-overlap': false,
       }, paint: { 'text-color': cameraColor, 'text-halo-color': '#000000', 'text-halo-width': 1.5, 'text-opacity': 0.8 }});
+
+      // Live Sensors (Drones)
+      map.addLayer({ id: 'sensor-dots', type: 'symbol', source: 'sensors', layout: {
+        'icon-image': 'drone-icon',
+        'icon-size': ['interpolate', ['linear'], ['zoom'], 1, 0.5, 10, 1],
+        'icon-rotate': ['get', 'heading'],
+        'icon-rotation-alignment': 'map',
+        'icon-allow-overlap': true,
+      }, paint: { 'icon-opacity': 0.9 }});
+      map.addLayer({ id: 'sensor-label', type: 'symbol', source: 'sensors', layout: {
+        'text-field': ['concat', ['get', 'name'], '\n', ['to-string', ['get', 'alt']], 'm'],
+        'text-size': 9, 'text-font': ['Open Sans Bold'],
+        'text-offset': [0, 2],
+        'text-allow-overlap': false,
+      }, paint: { 'text-color': '#FFEA00', 'text-halo-color': '#000', 'text-halo-width': 1.5 }});
 
       // GDELT
 
@@ -646,6 +662,25 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
       map.flyTo({ center: coords, zoom: Math.max(map.getZoom(), 13), duration: 1000 });
     });
 
+    // ── LIVE SENSORS (opens CameraViewer panel) ──
+    map.on('click', 'sensor-dots', e => {
+      if (!e.features?.length) return;
+      const p = e.features[0].properties as any;
+      const coords = (e.features[0].geometry as any).coordinates;
+      onEntityClick?.({
+        type: 'cctv', // Reuse cctv viewer for sensor streams
+        id: p.id,
+        name: p.name,
+        city: 'DYNAMIC',
+        country: 'REMOTE',
+        source: p.source,
+        stream_url: p.stream_url,
+        stream_type: p.stream_type || 'hls',
+        lat: coords[1],
+        lng: coords[0],
+      });
+    });
+
     // ── Earthquakes (with USGS link) ──
     map.on('click', 'eq-circles', e => {
       if (!e.features?.length) return;
@@ -798,7 +833,7 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
     });
 
     // ── Generic hover for clickables ──
-    ['conflict-icons','cctv-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','ship-dots','sweep-device-dots','scan-targets-dots','sdk-sea','sdk-sea-glow','sdk-sea-atmo','sdk-air','sdk-air-glow','sdk-air-atmo','sdk-intel','sdk-intel-glow','sdk-intel-atmo','malware-dots'].forEach(layer => {
+    ['conflict-icons','cctv-dots','sensor-dots','eq-circles','sat-dots','fires-heat','gdelt-dots','weather-dots','infra-dots','maritime-dots','choke-dots','news-dots','sigint-news-dots','balloon-dots','rad-dots','ship-dots','sweep-device-dots','scan-targets-dots','sdk-sea','sdk-sea-glow','sdk-sea-atmo','sdk-air','sdk-air-glow','sdk-air-atmo','sdk-intel','sdk-intel-glow','sdk-intel-atmo','malware-dots'].forEach(layer => {
       map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = ''; });
     });
@@ -1196,6 +1231,23 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
 
   useEffect(() => {
     if (!mapReady) return;
+    setGeo('sensors', activeLayers.live_sensors && data.sensors ? data.sensors.map((s: any) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [s.telemetry.lng, s.telemetry.lat] },
+      properties: {
+        id: s.id,
+        name: s.name,
+        heading: s.telemetry.heading || 0,
+        alt: s.telemetry.alt || 0,
+        stream_url: s.stream_url,
+        stream_type: s.stream_type,
+        source: s.source
+      }
+    })) : []);
+  }, [mapReady, data.sensors, activeLayers.live_sensors, setGeo]);
+
+  useEffect(() => {
+    if (!mapReady) return;
     setGeo('fires', activeLayers.fires && data.fires ? data.fires.map((f: any) => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [f.lng, f.lat] }, properties: { brightness: f.brightness } })) : []);
   }, [mapReady, data.fires, activeLayers.fires, setGeo]);
 
@@ -1364,6 +1416,7 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
     setVis(['fl-jets'], activeLayers.jets);
     setVis(['fl-military'], activeLayers.military);
     setVis(['cctv-glow','cctv-dots','cctv-label'], activeLayers.cctv);
+    setVis(['sensor-dots','sensor-label'], activeLayers.live_sensors);
     setVis(['fires-heat'], activeLayers.fires);
     setVis(['weather-glow','weather-dots','weather-label'], activeLayers.weather);
     setVis(['infra-glow','infra-dots','infra-label'], activeLayers.infrastructure);

@@ -97,6 +97,14 @@ const LAYER_GROUPS = [
     ],
   },
   {
+    label: 'LIVE SENSORS',
+    fullLabel: 'REMOTE DATA SENSORS',
+    icon: Radar,
+    layers: [
+      { key: 'live_sensors', label: 'Drone Feeds', dataKey: 'sensors' },
+    ],
+  },
+  {
     label: 'DISPLAY',
     fullLabel: 'DISPLAY',
     icon: Sun,

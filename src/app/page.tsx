@@ -158,6 +158,7 @@ export default function Dashboard() {
     sdk_naval: true,
     terrain_3d: false,
     malware: false,
+    live_sensors: true,
   });
   const [liveFeedUrl, setLiveFeedUrl] = useState<string | null>(null);
   const [liveFeedName, setLiveFeedName] = useState('');
@@ -428,6 +429,12 @@ export default function Dashboard() {
       layerFetchedRef.current.add('gdelt');
     }
 
+    // Live Sensors
+    if (activeLayers.live_sensors && !layerFetchedRef.current.has('sensors')) {
+      fetchEndpoint('/api/sensors');
+      layerFetchedRef.current.add('sensors');
+    }
+
     // Submarine Cables
     if (activeLayers.cables && !layerFetchedRef.current.has('cables')) {
       (async () => {
@@ -469,6 +476,9 @@ export default function Dashboard() {
     }
     if (activeLayers.maritime) {
       intervals.push(setInterval(() => fetchEndpoint('/api/maritime', d => ({ maritime_ports: d.ports, maritime_chokepoints: d.chokepoints, maritime_ships: d.ships })), 10000)); // 10s
+    }
+    if (activeLayers.live_sensors) {
+      intervals.push(setInterval(() => fetchEndpoint('/api/sensors'), 5000)); // 5s high-frequency polling for sensors
     }
     return () => intervals.forEach(clearInterval);
   }, [activeLayers, fetchEndpoint]);
