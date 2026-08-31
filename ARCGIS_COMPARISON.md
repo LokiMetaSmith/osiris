@@ -440,34 +440,34 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 4: High-Throughput Spatial Analytics, Geofencing & Telemetry Firehose
 
-- [ ] **4.1 Migrate Telemetry Storage to PostgreSQL + PostGIS Database**
+- [x] **4.1 Migrate Telemetry Storage to PostgreSQL + PostGIS Database**
   - **Goal**: Replace in-memory sensor store with a persistent, spatially-indexed PostGIS database.
   - **Tech Stack**: PostgreSQL 16, PostGIS 3.4, Prisma / Kysely ORM.
   - **Target Files**: `src/lib/db/schema.sql`, `src/lib/sensor-store.ts`, `docker-compose.yml`.
   - **Subtasks**:
-    - [ ] Add `postgres` service with PostGIS extensions to `docker-compose.yml`.
-    - [ ] Create relational schema: `sensors`, `telemetry_history`, `geofences`, `alerts`, `target_tracks`.
-    - [ ] Refactor `src/lib/sensor-store.ts` to execute spatial queries (`ST_SetSRID`, `ST_MakePoint`, `ST_DWithin`).
+    - [x] Add `postgres` service with PostGIS extensions to `docker-compose.yml`.
+    - [x] Create relational schema: `sensors`, `telemetry_history`, `geofences`, `alerts`, `target_tracks`.
+    - [x] Refactor `src/lib/sensor-store.ts` to execute spatial queries (`ST_SetSRID`, `ST_MakePoint`, `ST_DWithin`).
   - **Acceptance Criteria**: All drone telemetry updates are saved with spatial geometry indexes and sub-millisecond query performance.
 
-- [ ] **4.2 Build Redis Pub/Sub & WebSocket Live Telemetry Firehose**
+- [x] **4.2 Build Redis Pub/Sub & WebSocket Live Telemetry Firehose**
   - **Goal**: Stream thousands of concurrent telemetry events to frontend clients with low latency.
   - **Tech Stack**: Redis Pub/Sub, Node `ws` / WebSockets, Next.js Custom Server or Edge WebSocket Handler.
   - **Target Files**: `src/lib/socket/server.ts`, `src/lib/socket/client.ts`, `src/app/api/sensors/stream/route.ts`.
   - **Subtasks**:
-    - [ ] Configure Redis client in `src/lib/redis.ts` for publish/subscribe channel management.
-    - [ ] Implement WebSocket server broadcasting `telemetry_update`, `geofence_alert`, and `cv_track` topics.
-    - [ ] Connect `OsintMap.tsx` data hooks to WebSocket stream with automatic reconnection logic.
+    - [x] Configure Redis client in `src/lib/redis.ts` for publish/subscribe channel management.
+    - [x] Implement WebSocket server broadcasting `telemetry_update`, `geofence_alert`, and `cv_track` topics.
+    - [x] Connect `OsintMap.tsx` data hooks to WebSocket stream with automatic reconnection logic.
   - **Acceptance Criteria**: Telemetry updates posted to `/api/sensors` are received by client browsers over WebSockets within 15ms.
 
-- [ ] **4.3 Build Server-Side Dynamic Geofencing & Airspace Violation Alerting Engine**
+- [x] **4.3 Build Server-Side Dynamic Geofencing & Airspace Violation Alerting Engine**
   - **Goal**: Automatically trigger warning alerts when drones enter restricted airspaces or deviate from flight plans.
   - **Tech Stack**: PostGIS (`ST_Contains`, `ST_Buffer`), Turf.js, WebPush / Toast Alerts.
   - **Target Files**: `src/lib/geofence/engine.ts`, `src/components/LiveAlerts.tsx`.
   - **Subtasks**:
-    - [ ] Implement geofence evaluation service in `src/lib/geofence/engine.ts`.
-    - [ ] Create UI geofence creator tool allowing operators to draw No-Fly Zones (NFZ) directly on the map.
-    - [ ] Publish high-priority warning alerts to `LiveAlerts.tsx` when a drone breaches a boundary.
+    - [x] Implement geofence evaluation service in `src/lib/geofence/engine.ts`.
+    - [x] Create UI geofence creator tool allowing operators to draw No-Fly Zones (NFZ) directly on the map.
+    - [x] Publish high-priority warning alerts to `LiveAlerts.tsx` when a drone breaches a boundary.
   - **Acceptance Criteria**: Crossing a drawn No-Fly Zone polygon immediately triggers a red banner warning in the UI with sound alert.
 
 ---

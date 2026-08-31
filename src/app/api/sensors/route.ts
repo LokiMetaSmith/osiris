@@ -27,6 +27,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Import geofence engine and DB store dynamically or directly
+    const { evaluateGeofences } = await import('@/lib/geofence/engine');
+    const { saveSensorTelemetry } = await import('@/lib/db/postgis-store');
+
     // Telemetry Update
     if ('telemetry' in body && !('type' in body)) {
       const update = body as SensorTelemetryUpdate;
@@ -44,7 +48,10 @@ export async function POST(request: Request) {
       };
 
       updateSensor(updated);
-      return NextResponse.json({ success: true, sensor: updated });
+      await saveSensorTelemetry(updated);
+      const alerts = evaluateGeofences(updated);
+
+      return NextResponse.json({ success: true, sensor: updated, alerts });
     }
 
     // Full Registration or Update
@@ -62,7 +69,10 @@ export async function POST(request: Request) {
     };
 
     updateSensor(sensor);
-    return NextResponse.json({ success: true, sensor });
+    await saveSensorTelemetry(sensor);
+    const alerts = evaluateGeofences(sensor);
+
+    return NextResponse.json({ success: true, sensor, alerts });
 
   } catch (error) {
     console.error('Sensor API error:', error);
