@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Maximize2, Compass, Navigation, Eye, ShieldAlert } from 'lucide-react';
 import Hls from 'hls.js';
+import { CvBoundingBoxOverlay } from './CvBoundingBoxOverlay';
+import { BoundingBoxDetection } from '@/lib/cv/target-tracker';
 
 interface FmvViewerProps {
   sensor: any | null;
@@ -37,6 +39,12 @@ export default function FmvViewer({ sensor, onClose, onLocate }: FmvViewerProps)
 
   const streamUrl = sensor?.stream_url || 'http://localhost:8889/drone1';
   const streamType = sensor?.stream_type || 'webrtc';
+
+  // Simulated live Computer Vision detections
+  const [cvDetections] = useState<BoundingBoxDetection[]>([
+    { x1: 0.42, y1: 0.38, x2: 0.51, y2: 0.46, confidence: 0.92, class_name: 'vehicle', track_id: 101 },
+    { x1: 0.65, y1: 0.52, x2: 0.72, y2: 0.60, confidence: 0.87, class_name: 'truck', track_id: 102 }
+  ]);
 
   useEffect(() => {
     if (!sensor) return;
@@ -160,6 +168,9 @@ export default function FmvViewer({ sensor, onClose, onLocate }: FmvViewerProps)
                 </div>
               </div>
             )}
+
+            {/* Live CV Target Bounding Box Overlay */}
+            <CvBoundingBoxOverlay detections={cvDetections} />
 
             {/* Tactical HUD Overlay (HUD Elements over video) */}
             <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 font-mono text-[9px] text-[var(--gold-primary)]">
