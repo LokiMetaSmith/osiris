@@ -474,34 +474,34 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 5: Edge Computer Vision (CV) Target Detection Microservice
 
-- [ ] **5.1 Develop Python FastAPI + YOLOv8 / ONNX Inference Microservice**
+- [x] **5.1 Develop Python FastAPI + YOLOv8 / ONNX Inference Microservice**
   - **Goal**: Run automated vehicle, vessel, aircraft, and personnel detection on live drone video frames.
   - **Tech Stack**: Python 3.11, FastAPI, YOLOv8 (Ultralytics), ONNX Runtime, OpenCV.
   - **Target Files**: `services/cv-inference/main.py`, `services/cv-inference/Dockerfile`.
   - **Subtasks**:
-    - [ ] Create standalone `services/cv-inference` directory with FastAPI server endpoints `/detect/frame` and `/detect/stream`.
-    - [ ] Load pre-trained `yolov8n.pt` / `yolov8s-visdrone.pt` (VisDrone aerial dataset tuned model).
-    - [ ] Add GPU/TensorRT detection pipeline returning bounding boxes `[x1, y1, x2, y2, confidence, class]`.
+    - [x] Create standalone `services/cv-inference` directory with FastAPI server endpoints `/detect/frame` and `/detect/stream`.
+    - [x] Load pre-trained `yolov8n.pt` / `yolov8s-visdrone.pt` (VisDrone aerial dataset tuned model).
+    - [x] Add GPU/TensorRT detection pipeline returning bounding boxes `[x1, y1, x2, y2, confidence, class]`.
   - **Acceptance Criteria**: Inference microservice processes 30fps 1080p video frames with sub-20ms latency per frame.
 
-- [ ] **5.2 Implement VMTI Target Geolocation & Map Layer Publishing**
+- [x] **5.2 Implement VMTI Target Geolocation & Map Layer Publishing**
   - **Goal**: Map pixel bounding boxes from aerial video onto georeferenced ground coordinates.
   - **Tech Stack**: Python, NumPy, MISB ST 0903, WebSockets.
   - **Target Files**: `services/cv-inference/geolocate.py`, `src/app/api/cv/tracks/route.ts`.
   - **Subtasks**:
-    - [ ] Calculate ground target latitude/longitude by ray-casting pixel offsets through camera intrinsic matrix and MISB KLV pose data.
-    - [ ] Assign persistent target track IDs using SORT / ByteTrack multi-object tracking algorithm.
-    - [ ] Publish GeoJSON target tracks (`cv-targets` layer) over Redis Pub/Sub to the frontend.
+    - [x] Calculate ground target latitude/longitude by ray-casting pixel offsets through camera intrinsic matrix and MISB KLV pose data.
+    - [x] Assign persistent target track IDs using SORT / ByteTrack multi-object tracking algorithm.
+    - [x] Publish GeoJSON target tracks (`cv-targets` layer) over Redis Pub/Sub to the frontend.
   - **Acceptance Criteria**: Detected vehicles on video feed appear as labeled target markers moving synchronously on the map layer.
 
-- [ ] **5.3 Integrate Bounding Box Overlays into Video HUD UI**
+- [x] **5.3 Integrate Bounding Box Overlays into Video HUD UI**
   - **Goal**: Render animated detection bounding boxes directly on top of the live video player component.
   - **Tech Stack**: HTML5 Canvas / SVG Overlay, React 19, Framer Motion.
   - **Target Files**: `src/components/CvBoundingBoxOverlay.tsx`, `src/components/FmvViewer.tsx`.
   - **Subtasks**:
-    - [ ] Build canvas overlay `CvBoundingBoxOverlay.tsx` overlaid precisely on HTML5 video element.
-    - [ ] Color-code bounding boxes by class: Red (Military/Target), Yellow (Vehicle), Cyan (Vessel), Green (Person).
-    - [ ] Add confidence threshold slider (0% - 100%) in UI settings.
+    - [x] Build canvas overlay `CvBoundingBoxOverlay.tsx` overlaid precisely on HTML5 video element.
+    - [x] Color-code bounding boxes by class: Red (Military/Target), Yellow (Vehicle), Cyan (Vessel), Green (Person).
+    - [x] Add confidence threshold slider (0% - 100%) in UI settings.
   - **Acceptance Criteria**: Video player displays real-time color-coded bounding boxes tracking moving objects with low jitter.
 
 ---
