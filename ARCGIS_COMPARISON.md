@@ -406,34 +406,34 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 3: 3D Terrain Elevation & Dual Map Engine Upgrade
 
-- [ ] **3.1 Upgrade MapLibre GL JS to v3+ with Raster DEM Elevation**
+- [x] **3.1 Upgrade MapLibre GL JS to v3+ with Raster DEM Elevation**
   - **Goal**: Enable true 3D terrain elevation rendering across the global map.
   - **Tech Stack**: MapLibre GL JS v3+, AWS Terrarium / MapTiler Terrain RGB tiles.
   - **Target Files**: `package.json`, `src/components/OsintMap.tsx`.
   - **Subtasks**:
-    - [ ] Upgrade `maplibre-gl` dependency to `^5.0.0` or latest v3+ release.
-    - [ ] Configure `raster-dem` source pointing to open RGB terrain tiles (`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`).
-    - [ ] Add UI pitch/bearing controls and terrain exaggeration toggles (1.0x - 2.5x).
+    - [x] Upgrade `maplibre-gl` dependency to `^5.0.0` or latest v3+ release.
+    - [x] Configure `raster-dem` source pointing to open RGB terrain tiles (`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`).
+    - [x] Add UI pitch/bearing controls and terrain exaggeration toggles (1.0x - 2.5x).
   - **Acceptance Criteria**: Tilting map pitch reveals physical mountain ranges, valleys, and terrain elevation contouring.
 
-- [ ] **3.2 Integrate CesiumJS Engine for Photogrammetry Meshes & Point Clouds**
+- [x] **3.2 Integrate CesiumJS Engine for Photogrammetry Meshes & Point Clouds**
   - **Goal**: Provide a dedicated 3D scene engine for dense point clouds (`.las`/`.laz`) and textured 3D meshes.
   - **Tech Stack**: CesiumJS, `resium` or custom React Cesium container.
   - **Target Files**: `src/components/CesiumScene.tsx`, `src/app/page.tsx`.
   - **Subtasks**:
-    - [ ] Create `src/components/CesiumScene.tsx` initialized with Cesium World Terrain and Ion/open tile sources.
-    - [ ] Add camera sync bridge: switching between 2D MapLibre and 3D Cesium maintains camera position and orientation.
-    - [ ] Add OGC 3D Tileset loader for NodeODM photogrammetry outputs.
+    - [x] Create `src/components/CesiumScene.tsx` initialized with Cesium World Terrain and Ion/open tile sources.
+    - [x] Add camera sync bridge: switching between 2D MapLibre and 3D Cesium maintains camera position and orientation.
+    - [x] Add OGC 3D Tileset loader for NodeODM photogrammetry outputs.
   - **Acceptance Criteria**: Users can switch seamlessly between MapLibre 2D/3D map view and CesiumJS 3D mesh inspection view.
 
-- [ ] **3.3 Develop 3D Line-of-Sight & Viewshed Spatial Analytics Tooling**
+- [x] **3.3 Develop 3D Line-of-Sight & Viewshed Spatial Analytics Tooling**
   - **Goal**: Provide interactive line-of-sight analysis between drone sensor positions and ground targets.
   - **Tech Stack**: Turf.js, Cesium Analytics API / MapLibre QueryRenderedFeatures.
   - **Target Files**: `src/lib/analytics/viewshed.ts`, `src/components/ViewshedPanel.tsx`.
   - **Subtasks**:
-    - [ ] Create ray-casting viewshed utility in `src/lib/analytics/viewshed.ts` sampling terrain elevation along sightlines.
-    - [ ] Render green (visible) / red (obstructed) line-of-sight vectors between drone marker and clicked ground target.
-    - [ ] Calculate 360° viewshed coverage radius based on drone altitude and terrain obstacles.
+    - [x] Create ray-casting viewshed utility in `src/lib/analytics/viewshed.ts` sampling terrain elevation along sightlines.
+    - [x] Render green (visible) / red (obstructed) line-of-sight vectors between drone marker and clicked ground target.
+    - [x] Calculate 360° viewshed coverage radius based on drone altitude and terrain obstacles.
   - **Acceptance Criteria**: Clicking any ground location draws a color-coded line showing whether line-of-sight is blocked by terrain hilltops or structures.
 
 ---
