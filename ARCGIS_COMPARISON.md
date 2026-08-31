@@ -363,43 +363,43 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 2: Drone Photogrammetry & 3D Reality Engine Integration
 
-- [ ] **2.1 Integrate NodeODM (OpenDroneMap) REST API Client**
+- [x] **2.1 Integrate NodeODM (OpenDroneMap) REST API Client**
   - **Goal**: Connect the platform to a self-hosted NodeODM photogrammetry processing service.
   - **Tech Stack**: NodeODM (OpenDroneMap), Node.js, `axios`/`fetch`.
   - **Target Files**: `src/lib/photogrammetry/nodeodm-client.ts`, `.env.example`.
   - **Subtasks**:
-    - [ ] Define `NODEODM_URL` and `NODEODM_TOKEN` environment variables in `.env.example`.
-    - [ ] Create `src/lib/photogrammetry/nodeodm-client.ts` with methods: `createTask()`, `getTaskStatus()`, `downloadAsset()`, `cancelTask()`.
-    - [ ] Add error handling and retry logic for long-running photogrammetry jobs (10+ min runtime).
+    - [x] Define `NODEODM_URL` and `NODEODM_TOKEN` environment variables in `.env.example`.
+    - [x] Create `src/lib/photogrammetry/nodeodm-client.ts` with methods: `createTask()`, `getTaskStatus()`, `downloadAsset()`, `cancelTask()`.
+    - [x] Add error handling and retry logic for long-running photogrammetry jobs (10+ min runtime).
   - **Acceptance Criteria**: Successful REST handshake with NodeODM `/info` endpoint confirming processing capacity.
 
-- [ ] **2.2 Implement Geotagged Image Upload & Job Queue Pipeline**
+- [x] **2.2 Implement Geotagged Image Upload & Job Queue Pipeline**
   - **Goal**: Allow users to drag-and-drop raw geotagged drone JPEG/TIFF image sets for background processing.
   - **Tech Stack**: Next.js App Router API, Multer/Formidable, Redis/BullMQ.
   - **Target Files**: `src/app/api/photogrammetry/upload/route.ts`, `src/app/api/photogrammetry/jobs/route.ts`.
   - **Subtasks**:
-    - [ ] Build `/api/photogrammetry/upload` endpoint accepting multi-file zip archive uploads.
-    - [ ] Parse EXIF GPS tags (`GPSLatitude`, `GPSLongitude`, `GPSAltitude`) to pre-validate bounding box coverage.
-    - [ ] Create background job status tracker in `src/lib/photogrammetry/job-store.ts`.
+    - [x] Build `/api/photogrammetry/upload` endpoint accepting multi-file zip archive uploads.
+    - [x] Parse EXIF GPS tags (`GPSLatitude`, `GPSLongitude`, `GPSAltitude`) to pre-validate bounding box coverage.
+    - [x] Create background job status tracker in `src/lib/photogrammetry/job-store.ts`.
   - **Acceptance Criteria**: Uploading a 50-image drone survey triggers a processing job with progress percentages reported via polling API.
 
-- [ ] **2.3 Build Cloud-Optimized GeoTIFF (COG) & 3D Tiles Local Tile Server**
+- [x] **2.3 Build Cloud-Optimized GeoTIFF (COG) & 3D Tiles Local Tile Server**
   - **Goal**: Host generated orthomosaics and 3D Tiles locally for MapLibre/Cesium rendering.
   - **Tech Stack**: `tippecanoe`, `gdal`, Node.js static server.
   - **Target Files**: `src/app/api/tiles/ortho/[jobId]/{z}/{x}/{y}/route.ts`, `src/app/api/tiles/3dtiles/[jobId]/route.ts`.
   - **Subtasks**:
-    - [ ] Build dynamic tile handler serving COG raster tiles to MapLibre raster sources.
-    - [ ] Build OGC 3D Tiles (`tileset.json` + `.b3dm`) static file handler for 3D textured mesh streaming.
+    - [x] Build dynamic tile handler serving COG raster tiles to MapLibre raster sources.
+    - [x] Build OGC 3D Tiles (`tileset.json` + `.b3dm`) static file handler for 3D textured mesh streaming.
   - **Acceptance Criteria**: Finished NodeODM job outputs high-resolution orthomosaic tiles rendered seamless over the basemap.
 
-- [ ] **2.4 Build Photogrammetry Management Panel in UI**
+- [x] **2.4 Build Photogrammetry Management Panel in UI**
   - **Goal**: Provide UI controls to manage photogrammetry jobs, toggle orthomosaics, and inspect DSM layers.
   - **Tech Stack**: React 19, Lucide React, CSS Modules.
   - **Target Files**: `src/components/PhotogrammetryPanel.tsx`, `src/components/LayerPanel.tsx`.
   - **Subtasks**:
-    - [ ] Create `PhotogrammetryPanel.tsx` with tabs: "New Survey", "Active Jobs", "Completed Orthos".
-    - [ ] Add opacity sliders and blend mode selectors for overlaying orthomosaics on satellite imagery.
-    - [ ] Integrate survey boundary outlines on `OsintMap.tsx`.
+    - [x] Create `PhotogrammetryPanel.tsx` with tabs: "New Survey", "Active Jobs", "Completed Orthos".
+    - [x] Add opacity sliders and blend mode selectors for overlaying orthomosaics on satellite imagery.
+    - [x] Integrate survey boundary outlines on `OsintMap.tsx`.
   - **Acceptance Criteria**: Users can toggle custom orthomosaic layers on/off and adjust transparency over standard satellite basemaps.
 
 ---

@@ -1654,6 +1654,18 @@ function OsintMap({ data, activeLayers, activeOrthoJobs = [], onEntityClick, onM
 
     try {
       if (enabled) {
+        // ── RASTER DEM TERRAIN SOURCE (Terrarium RGB Elevation) ──
+        if (!map.getSource('terrain-dem')) {
+          map.addSource('terrain-dem', {
+            type: 'raster-dem',
+            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            encoding: 'terrarium',
+            maxzoom: 15,
+          });
+        }
+        map.setTerrain({ source: 'terrain-dem', exaggeration: 1.5 });
+
         // ── 3D BUILDINGS SOURCE (OpenFreeMap CDN — no API key, globally cached) ──
         if (!map.getSource('osint-buildings')) {
           map.addSource('osint-buildings', {
@@ -1704,7 +1716,14 @@ function OsintMap({ data, activeLayers, activeOrthoJobs = [], onEntityClick, onM
         }
 
       } else {
-        // ── DISABLE 3D ──
+        // ── DISABLE 3D TERRAIN & BUILDINGS ──
+        try {
+          if (map.getTerrain()) {
+            map.setTerrain(null);
+          }
+        } catch (e) {
+          /* ignore if terrain not set */
+        }
         if (map.getLayer('osint-3d-buildings')) map.removeLayer('osint-3d-buildings');
       }
     } catch (e) {
