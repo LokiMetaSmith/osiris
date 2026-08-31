@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layers, BarChart3, Newspaper, Search, X, Globe, MapPinned, Radar, Satellite, Moon, ExternalLink, AlertTriangle, Activity, Database, Wifi, Play, Network, Crosshair } from 'lucide-react';
+import { Layers, BarChart3, Newspaper, Search, X, Globe, MapPinned, Radar, Satellite, Moon, ExternalLink, AlertTriangle, Activity, Database, Wifi, Play, Network, Crosshair, Box } from 'lucide-react';
 import IntelFeed from '@/components/IntelFeed';
 import MarketsPanel from '@/components/MarketsPanel';
 import ScmPanel from '@/components/ScmPanel';
@@ -24,6 +24,7 @@ const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const EntityGraphPanel = dynamic(() => import('@/components/EntityGraphPanel'));
 const PhotogrammetryPanel = dynamic(() => import('@/components/PhotogrammetryPanel'));
 const ViewshedPanel = dynamic(() => import('@/components/ViewshedPanel'));
+const CesiumScene = dynamic(() => import('@/components/CesiumScene'));
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -121,6 +122,7 @@ export default function Dashboard() {
   const [osintTheme, setOsintTheme] = useState<'core'|'ghost'>('ghost');
   const [showPhotogrammetry, setShowPhotogrammetry] = useState(false);
   const [showViewshed, setShowViewshed] = useState(false);
+  const [showCesiumScene, setShowCesiumScene] = useState(false);
   const [activeOrthoJobs, setActiveOrthoJobs] = useState<string[]>([]);
 
   useEffect(() => {
@@ -979,6 +981,12 @@ export default function Dashboard() {
         </div>
 
         <div className="relative group">
+          <button title="3D Scene & Reality Engine (Cesium)" onClick={() => { setShowCesiumScene(!showCesiumScene); setShowViewshed(false); setShowPhotogrammetry(false); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showCesiumScene ? 'bg-[#00E5FF]/20' : 'hover:bg-white/10'}`}>
+            <Box className={`w-4 h-4 ${showCesiumScene ? 'text-[#00E5FF]' : 'text-white/60'}`} />
+          </button>
+        </div>
+
+        <div className="relative group">
           <button onClick={() => { setShowDesktopSearch(!showDesktopSearch); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showDesktopSearch ? 'bg-[var(--gold-primary)]/20' : 'hover:bg-white/10'}`}>
             <Search className={`w-4 h-4 ${showDesktopSearch ? 'text-[var(--gold-primary)]' : 'text-white/60'}`} />
           </button>
@@ -1271,6 +1279,20 @@ export default function Dashboard() {
         <ViewshedPanel
           onClose={() => setShowViewshed(false)}
           onFlyTo={(coords) => setFlyToLocation({ ...coords })}
+        />
+      )}
+
+      {/* ── 3D Scene Engine Overlay (Cesium) ── */}
+      {showCesiumScene && (
+        <CesiumScene
+          onClose={() => setShowCesiumScene(false)}
+          lat={mapView.latitude}
+          lng={flyToLocation?.lng ?? 23.32}
+          activeOrthoJobs={activeOrthoJobs}
+          onSyncMapLocation={(lat, lng) => {
+            setFlyToLocation({ lat, lng, zoom: 14, ts: Date.now() });
+            setShowCesiumScene(false);
+          }}
         />
       )}
 
