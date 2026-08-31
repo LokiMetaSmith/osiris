@@ -27,6 +27,17 @@ services:
     restart: unless-stopped
     networks:
       - default
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: osint-mediamtx
+    ports:
+      - "8554:8554"   # RTSP video stream ingestion
+      - "8889:8889"   # WebRTC browser video streaming
+      - "8888:8888"   # HLS stream proxying
+    restart: unless-stopped
+    networks:
+      - default
       - umami_default
 
   osint-cache:

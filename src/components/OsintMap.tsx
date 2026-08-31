@@ -182,7 +182,7 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
       createDot(map, 'dot-cctv', cameraColor, 10);
       createIcon(map, 'drone-icon', '#FFEA00', 20);
 
-      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv', 'sensors', 'fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'sdk-entities', 'sdk-links', 'malware-nodes', 'network-mesh'];
+      const sources = ['flights','military','jets','private-fl','satellites','earthquakes','gdelt','gps-jamming','day-night','cctv', 'sensors', 'fmv-footprint', 'fmv-target-center', 'fires','weather','infrastructure','maritime','maritime-choke','maritime-ships','live-news','sigint-news','conflict-zones', 'war-alerts-targets', 'war-alerts-lines', 'balloons', 'radiation', 'ip-sweep-devices', 'ip-sweep-pulse', 'ip-sweep-connections', 'scan-targets', 'sdk-entities', 'sdk-links', 'malware-nodes', 'network-mesh'];
       sources.forEach(s => map.addSource(s, { type: 'geojson', data: EMPTY_FC }));
 
       // Warning icon generator (parameterized — eliminates 3x copy-paste)
@@ -258,6 +258,23 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
         'text-field': ['get','name'], 'text-size': 9, 'text-font': ['Open Sans Regular'],
         'text-offset': [0, 1.8], 'text-max-width': 12, 'text-allow-overlap': false,
       }, paint: { 'text-color': cameraColor, 'text-halo-color': '#000000', 'text-halo-width': 1.5, 'text-opacity': 0.8 }});
+
+      // Dynamic FMV Drone Camera Footprint FOV Layer
+      map.addLayer({ id: 'fmv-footprint-fill', type: 'fill', source: 'fmv-footprint', paint: {
+        'fill-color': '#FFEA00',
+        'fill-opacity': 0.2,
+      }});
+      map.addLayer({ id: 'fmv-footprint-outline', type: 'line', source: 'fmv-footprint', paint: {
+        'line-color': '#FFEA00',
+        'line-width': 2,
+        'line-dasharray': [2, 2],
+      }});
+      map.addLayer({ id: 'fmv-target-center', type: 'circle', source: 'fmv-target-center', paint: {
+        'circle-radius': 5,
+        'circle-color': '#FF3D3D',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#FFFFFF',
+      }});
 
       // Live Sensors (Drones)
       map.addLayer({ id: 'sensor-dots', type: 'symbol', source: 'sensors', layout: {
@@ -662,22 +679,25 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
       map.flyTo({ center: coords, zoom: Math.max(map.getZoom(), 13), duration: 1000 });
     });
 
-    // ── LIVE SENSORS (opens CameraViewer panel) ──
+    // ── LIVE SENSORS (opens FmvViewer or CameraViewer panel) ──
     map.on('click', 'sensor-dots', e => {
       if (!e.features?.length) return;
       const p = e.features[0].properties as any;
       const coords = (e.features[0].geometry as any).coordinates;
       onEntityClick?.({
-        type: 'cctv', // Reuse cctv viewer for sensor streams
+        type: 'sensor',
         id: p.id,
         name: p.name,
         city: 'DYNAMIC',
         country: 'REMOTE',
         source: p.source,
         stream_url: p.stream_url,
-        stream_type: p.stream_type || 'hls',
+        stream_type: p.stream_type || 'webrtc',
         lat: coords[1],
         lng: coords[0],
+        alt: p.alt,
+        telemetry: { lat: coords[1], lng: coords[0], alt: p.alt, heading: p.heading },
+        metadata: p.metadata
       });
     });
 
@@ -1231,19 +1251,49 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
 
   useEffect(() => {
     if (!mapReady) return;
-    setGeo('sensors', activeLayers.live_sensors && data.sensors ? data.sensors.map((s: any) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [s.telemetry.lng, s.telemetry.lat] },
-      properties: {
-        id: s.id,
-        name: s.name,
-        heading: s.telemetry.heading || 0,
-        alt: s.telemetry.alt || 0,
-        stream_url: s.stream_url,
-        stream_type: s.stream_type,
-        source: s.source
-      }
-    })) : []);
+
+    const sensorFeatures: any[] = [];
+    const footprintFeatures: any[] = [];
+    const targetCenterFeatures: any[] = [];
+
+    if (activeLayers.live_sensors && data.sensors) {
+      data.sensors.forEach((s: any) => {
+        sensorFeatures.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [s.telemetry.lng, s.telemetry.lat] },
+          properties: {
+            id: s.id,
+            name: s.name,
+            heading: s.telemetry.heading || 0,
+            alt: s.telemetry.alt || 0,
+            stream_url: s.stream_url,
+            stream_type: s.stream_type,
+            source: s.source,
+            metadata: JSON.stringify(s.metadata || {})
+          }
+        });
+
+        if (s.metadata?.footprintPolygon) {
+          footprintFeatures.push({
+            type: 'Feature',
+            geometry: { type: 'Polygon', coordinates: [s.metadata.footprintPolygon] },
+            properties: { id: s.id, name: s.name }
+          });
+        }
+
+        if (s.metadata?.targetCenterLocation) {
+          targetCenterFeatures.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: s.metadata.targetCenterLocation },
+            properties: { id: s.id, name: s.name }
+          });
+        }
+      });
+    }
+
+    setGeo('sensors', sensorFeatures);
+    setGeo('fmv-footprint', footprintFeatures);
+    setGeo('fmv-target-center', targetCenterFeatures);
   }, [mapReady, data.sensors, activeLayers.live_sensors, setGeo]);
 
   useEffect(() => {
@@ -1416,7 +1466,7 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
     setVis(['fl-jets'], activeLayers.jets);
     setVis(['fl-military'], activeLayers.military);
     setVis(['cctv-glow','cctv-dots','cctv-label'], activeLayers.cctv);
-    setVis(['sensor-dots','sensor-label'], activeLayers.live_sensors);
+    setVis(['sensor-dots','sensor-label','fmv-footprint-fill','fmv-footprint-outline','fmv-target-center'], activeLayers.live_sensors);
     setVis(['fires-heat'], activeLayers.fires);
     setVis(['weather-glow','weather-dots','weather-label'], activeLayers.weather);
     setVis(['infra-glow','infra-dots','infra-label'], activeLayers.infrastructure);

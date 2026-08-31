@@ -19,6 +19,7 @@ import LiveAlerts from '@/components/LiveAlerts';
 const OsintMap = dynamic(() => import('@/components/OsintMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
 const CameraViewer = dynamic(() => import('@/components/CameraViewer'));
+const FmvViewer = dynamic(() => import('@/components/FmvViewer'));
 const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const EntityGraphPanel = dynamic(() => import('@/components/EntityGraphPanel'));
 function useIsMobile() {
@@ -98,6 +99,7 @@ export default function Dashboard() {
   const [dossierLoading, setDossierLoading] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [activeCamera, setActiveCamera] = useState<any>(null);
+  const [activeSensor, setActiveSensor] = useState<any>(null);
   const [spaceWeather, setSpaceWeather] = useState<any>(null);
   const [showLayers, setShowLayers] = useState(true);
   const [showMarkets, setShowMarkets] = useState(false);
@@ -290,6 +292,7 @@ export default function Dashboard() {
   // Entity click handler (hoisted from JSX to comply with Rules of Hooks - Fixes #113)
   const handleEntityClick = useCallback((entity: any) => {
     if (entity?.type === 'cctv') setActiveCamera(entity);
+    if (entity?.type === 'sensor' || entity?.source === 'FMV_MISB_FEED') setActiveSensor(entity);
     if (entity?.type === 'live_news' && entity.url) {
       setLiveFeedUrl(entity.url);
       setLiveFeedName(entity.name);
@@ -1209,6 +1212,13 @@ export default function Dashboard() {
       <CameraViewer
         camera={activeCamera}
         onClose={() => setActiveCamera(null)}
+        onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })}
+      />
+
+      {/* ── FMV Drone Sensor Viewer ── */}
+      <FmvViewer
+        sensor={activeSensor}
+        onClose={() => setActiveSensor(null)}
         onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })}
       />
 
