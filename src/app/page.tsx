@@ -23,6 +23,7 @@ const FmvViewer = dynamic(() => import('@/components/FmvViewer'));
 const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const EntityGraphPanel = dynamic(() => import('@/components/EntityGraphPanel'));
 const PhotogrammetryPanel = dynamic(() => import('@/components/PhotogrammetryPanel'));
+const ViewshedPanel = dynamic(() => import('@/components/ViewshedPanel'));
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function Dashboard() {
   const [demoMode, setDemoMode] = useState(false);
   const [osintTheme, setOsintTheme] = useState<'core'|'ghost'>('ghost');
   const [showPhotogrammetry, setShowPhotogrammetry] = useState(false);
+  const [showViewshed, setShowViewshed] = useState(false);
   const [activeOrthoJobs, setActiveOrthoJobs] = useState<string[]>([]);
 
   useEffect(() => {
@@ -965,8 +967,14 @@ export default function Dashboard() {
         </div>
 
         <div className="relative group">
-          <button title="Drone Photogrammetry & 3D Reality" onClick={() => { setShowPhotogrammetry(!showPhotogrammetry); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showPhotogrammetry ? 'bg-[#00E5FF]/20' : 'hover:bg-white/10'}`}>
+          <button title="Drone Photogrammetry & 3D Reality" onClick={() => { setShowPhotogrammetry(!showPhotogrammetry); setShowViewshed(false); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showPhotogrammetry ? 'bg-[#00E5FF]/20' : 'hover:bg-white/10'}`}>
             <Layers className={`w-4 h-4 ${showPhotogrammetry ? 'text-[#00E5FF]' : 'text-white/60'}`} />
+          </button>
+        </div>
+
+        <div className="relative group">
+          <button title="3D Line-of-Sight & Viewshed" onClick={() => { setShowViewshed(!showViewshed); setShowPhotogrammetry(false); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showViewshed ? 'bg-[#00E5FF]/20' : 'hover:bg-white/10'}`}>
+            <Crosshair className={`w-4 h-4 ${showViewshed ? 'text-[#00E5FF]' : 'text-white/60'}`} />
           </button>
         </div>
 
@@ -1255,6 +1263,14 @@ export default function Dashboard() {
               prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
             );
           }}
+        />
+      )}
+
+      {/* ── 3D Line-of-Sight & Viewshed Panel ── */}
+      {showViewshed && (
+        <ViewshedPanel
+          onClose={() => setShowViewshed(false)}
+          onFlyTo={(coords) => setFlyToLocation({ ...coords })}
         />
       )}
 
