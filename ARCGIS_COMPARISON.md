@@ -319,44 +319,44 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 1: Full Motion Video (FMV) & MISB ST 0601 / 0903 Metadata Pipeline
 
-- [ ] **1.1 Deploy MediaMTX RTSP/WebRTC Video Proxy Microservice**
+- [x] **1.1 Deploy MediaMTX RTSP/WebRTC Video Proxy Microservice**
   - **Goal**: Establish a low-latency WebRTC/RTSP media relay for live drone video ingestion.
   - **Tech Stack**: MediaMTX (Go), Docker, WebRTC, RTSP.
   - **Target Files**: `docker-compose.yml`, `nginx/nginx.conf`, `src/app/api/media-proxy/route.ts`.
   - **Subtasks**:
-    - [ ] Add `mediamtx` service definition to `docker-compose.yml` with port forwardings (8554 RTSP, 8889 WebRTC).
-    - [ ] Configure Nginx reverse proxy rules for WebRTC signaling (`/mediamtx/`).
-    - [ ] Add health-check API endpoint `/api/media-proxy/health` in Next.js to verify media stream status.
+    - [x] Add `mediamtx` service definition to `docker-compose.yml` with port forwardings (8554 RTSP, 8889 WebRTC).
+    - [x] Configure Nginx reverse proxy rules for WebRTC signaling (`/mediamtx/`).
+    - [x] Add health-check API endpoint `/api/media-proxy/health` in Next.js to verify media stream status.
   - **Acceptance Criteria**: RTSP feed published to `rtsp://localhost:8554/drone1` is converted into a zero-latency WebRTC stream accessible in the browser.
 
-- [ ] **1.2 Implement MISB ST 0601 / ST 0903 KLV Metadata Demuxer**
+- [x] **1.2 Implement MISB ST 0601 / ST 0903 KLV Metadata Demuxer**
   - **Goal**: Parse Key-Length-Value (KLV) metadata from MPEG-TS drone streams into JSON telemetry payloads.
   - **Tech Stack**: Node.js, `klv-parser`, `fluent-ffmpeg`, TypeScript.
   - **Target Files**: `src/lib/fmv/klv-parser.ts`, `src/app/api/sensors/fmv/route.ts`.
   - **Subtasks**:
-    - [ ] Create `src/lib/fmv/klv-parser.ts` to decode ST 0601 tags (Tag 5: Sensor Lat, Tag 6: Sensor Lng, Tag 7: Sensor True Alt, Tag 13: Sensor Pitch, Tag 14: Sensor Roll, Tag 15: Sensor Yaw, Tag 16: Horizontal FOV).
-    - [ ] Implement VMTI ST 0903 tag parsing for target bounding box coordinates and target classifications.
-    - [ ] Emit parsed KLV metadata as WebSocket events to `/api/sensors/fmv`.
+    - [x] Create `src/lib/fmv/klv-parser.ts` to decode ST 0601 tags (Tag 5: Sensor Lat, Tag 6: Sensor Lng, Tag 7: Sensor True Alt, Tag 13: Sensor Pitch, Tag 14: Sensor Roll, Tag 15: Sensor Yaw, Tag 16: Horizontal FOV).
+    - [x] Implement VMTI ST 0903 tag parsing for target bounding box coordinates and target classifications.
+    - [x] Emit parsed KLV metadata as WebSocket events to `/api/sensors/fmv`.
   - **Acceptance Criteria**: MPEG-TS stream containing MISB metadata outputs structured JSON telemetry objects at 30 Hz.
 
-- [ ] **1.3 Build Real-Time Dynamic Camera Footprint Projection Engine**
+- [x] **1.3 Build Real-Time Dynamic Camera Footprint Projection Engine**
   - **Goal**: Calculate and project the ground intersection trapezoid (FOV polygon) for drone cameras.
   - **Tech Stack**: `@turf/turf`, MapLibre GL JS, WebGL.
   - **Target Files**: `src/lib/fmv/footprint-calculator.ts`, `src/components/OsintMap.tsx`.
   - **Subtasks**:
-    - [ ] Implement `calculateCameraFootprint()` in `src/lib/fmv/footprint-calculator.ts` using altitude, sensor pitch, roll, heading, and horizontal FOV.
-    - [ ] Add a `fmv-footprint` GeoJSON source and semi-transparent fill layer to `OsintMap.tsx`.
-    - [ ] Bind real-time FOV coordinates to map render loop for smooth 60fps polygon motion.
+    - [x] Implement `calculateCameraFootprint()` in `src/lib/fmv/footprint-calculator.ts` using altitude, sensor pitch, roll, heading, and horizontal FOV.
+    - [x] Add a `fmv-footprint` GeoJSON source and semi-transparent fill layer to `OsintMap.tsx`.
+    - [x] Bind real-time FOV coordinates to map render loop for smooth 60fps polygon motion.
   - **Acceptance Criteria**: Drone movement and camera gimbal rotation dynamically update a highlighted trapezoidal ground footprint on the map.
 
-- [ ] **1.4 Develop FMV Video Player HUD & Synchronized Map Footprint UI**
+- [x] **1.4 Develop FMV Video Player HUD & Synchronized Map Footprint UI**
   - **Goal**: Create an integrated video HUD with crosshair telemetry overlay and synchronized map crosshairs.
   - **Tech Stack**: React 19, `hls.js`, Framer Motion, Lucide Icons.
   - **Target Files**: `src/components/FmvViewer.tsx`, `src/components/CameraViewer.tsx`.
   - **Subtasks**:
-    - [ ] Extend `CameraViewer.tsx` or build `FmvViewer.tsx` with overlay HUD elements (pitch, roll, altitude, speed, grid ref).
-    - [ ] Implement click-on-video to map ground lookup: clicking a pixel in the video HUD moves the map pointer to the corresponding ground coordinate.
-    - [ ] Add a toggle button for "Lock Map View to Camera Center".
+    - [x] Extend `CameraViewer.tsx` or build `FmvViewer.tsx` with overlay HUD elements (pitch, roll, altitude, speed, grid ref).
+    - [x] Implement click-on-video to map ground lookup: clicking a pixel in the video HUD moves the map pointer to the corresponding ground coordinate.
+    - [x] Add a toggle button for "Lock Map View to Camera Center".
   - **Acceptance Criteria**: Operators can view the live feed with telemetry HUD and see the camera crosshair tracked on the map in real-time.
 
 ---
