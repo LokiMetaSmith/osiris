@@ -508,34 +508,34 @@ This comprehensive TODO list provides an actionable, itemized engineering plan b
 
 ### Phase 6: Progressive Web App (PWA) & Disconnected Offline Field Mesh
 
-- [ ] **6.1 Configure PWA Service Workers & Offline Tile Caching**
+- [x] **6.1 Configure PWA Service Workers & Offline Tile Caching**
   - **Goal**: Allow field operators to load maps and core tools without internet access.
   - **Tech Stack**: `@ducanh2912/next-pwa`, Service Workers, Cache API.
   - **Target Files**: `next.config.ts`, `public/manifest.json`, `src/lib/pwa/sw.ts`.
   - **Subtasks**:
-    - [ ] Install and configure Next.js PWA module in `next.config.ts`.
-    - [ ] Build vector tile caching rule saving basemap z/x/y tiles within pre-selected operational areas.
-    - [ ] Add PWA installation banner and offline status indicator in `GlobalStatusBar.tsx`.
+    - [x] Install and configure Next.js PWA module in `next.config.ts`.
+    - [x] Build vector tile caching rule saving basemap z/x/y tiles within pre-selected operational areas.
+    - [x] Add PWA installation banner and offline status indicator in `GlobalStatusBar.tsx`.
   - **Acceptance Criteria**: Disconnecting network connectivity allows refreshing the application and rendering cached map regions seamlessly.
 
-- [ ] **6.2 Build Local-First IndexedDB Store with RxDB / PouchDB**
+- [x] **6.2 Build Local-First IndexedDB Store with RxDB / PouchDB**
   - **Goal**: Store field observations, telemetry logs, and survey reports locally on client devices.
   - **Tech Stack**: IndexedDB, RxDB / PouchDB, TypeScript.
   - **Target Files**: `src/lib/offline/db.ts`, `src/lib/offline/sync-engine.ts`.
   - **Subtasks**:
-    - [ ] Create local IndexedDB database schema for offline telemetry and field notes.
-    - [ ] Wrap API fetchers with local-first cache-then-network strategy.
-    - [ ] Queue outgoing POST requests (`/api/sensors`, field observations) in local offline sync table.
+    - [x] Create local IndexedDB database schema for offline telemetry and field notes.
+    - [x] Wrap API fetchers with local-first cache-then-network strategy.
+    - [x] Queue outgoing POST requests (`/api/sensors`, field observations) in local offline sync table.
   - **Acceptance Criteria**: Submitting a sensor update while offline saves it to IndexedDB without throwing network errors.
 
-- [ ] **6.3 Build Bi-Directional Offline Sync Engine**
+- [x] **6.3 Build Bi-Directional Offline Sync Engine**
   - **Goal**: Automatically flush queued field data to the central server when network connection is restored.
   - **Tech Stack**: Network Information API, RxDB Sync Plugin, Node.js API handlers.
   - **Target Files**: `src/lib/offline/sync-engine.ts`, `src/components/GlobalStatusBar.tsx`.
   - **Subtasks**:
-    - [ ] Monitor `window.addEventListener('online')` and `navigator.onLine` state changes.
-    - [ ] Implement conflict resolution strategy (Last-Write-Wins / Vector Clocks) for synced telemetry entries.
-    - [ ] Display offline queue sync progress indicator in `GlobalStatusBar.tsx` (e.g., "Syncing 14 queued reports...").
+    - [x] Monitor `window.addEventListener('online')` and `navigator.onLine` state changes.
+    - [x] Implement conflict resolution strategy (Last-Write-Wins / Vector Clocks) for synced telemetry entries.
+    - [x] Display offline queue sync progress indicator in `GlobalStatusBar.tsx` (e.g., "Syncing 14 queued reports...").
   - **Acceptance Criteria**: Reconnecting internet automatically pushes all queued offline observations to the server with zero data loss.
 
 ---
