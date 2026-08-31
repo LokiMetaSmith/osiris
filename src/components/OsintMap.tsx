@@ -7,6 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 interface OsintMapProps {
   data: any;
   activeLayers: Record<string, boolean>;
+  activeOrthoJobs?: string[];
   onEntityClick?: (entity: any) => void;
   onMouseCoords?: (coords: { lat: number; lng: number }) => void;
   onRightClick?: (coords: { lat: number; lng: number }) => void;
@@ -42,7 +43,7 @@ function computeSolarTerminator(): [number, number][] {
 
 const EMPTY_FC = { type: 'FeatureCollection' as const, features: [] };
 
-function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightClick, onViewStateChange, flyToLocation, projection = 'globe', mapStyle = 'dark', sweepData, scanTargets = [], demoMode = false, theme = 'core' }: OsintMapProps) {
+function OsintMap({ data, activeLayers, activeOrthoJobs = [], onEntityClick, onMouseCoords, onRightClick, onViewStateChange, flyToLocation, projection = 'globe', mapStyle = 'dark', sweepData, scanTargets = [], demoMode = false, theme = 'core' }: OsintMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
@@ -1577,6 +1578,47 @@ function OsintMap({ data, activeLayers, onEntityClick, onMouseCoords, onRightCli
     if (!mapReady || !mapRef.current || !flyToLocation) return;
     mapRef.current.flyTo({ center: [flyToLocation.lng, flyToLocation.lat], zoom: flyToLocation.zoom || 8, duration: 2000 });
   }, [mapReady, flyToLocation]);
+
+  // ── PHOTOGRAMMETRY ORTHOMOSAIC TILES LAYER MANAGEMENT ──
+  useEffect(() => {
+    if (!mapReady || !mapRef.current) return;
+    const map = mapRef.current;
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+    activeOrthoJobs.forEach((jobId) => {
+      const sourceId = `ortho-source-${jobId}`;
+      const layerId = `ortho-layer-${jobId}`;
+
+      if (!map.getSource(sourceId)) {
+        map.addSource(sourceId, {
+          type: 'raster',
+          tiles: [`${baseUrl}/api/tiles/ortho/${jobId}/{z}/{x}/{y}`],
+          tileSize: 256,
+        });
+
+        map.addLayer({
+          id: layerId,
+          type: 'raster',
+          source: sourceId,
+          paint: { 'raster-opacity': 0.85 },
+        }, 'day-night-fill');
+      }
+    });
+
+    // Remove unselected orthomosaics
+    const style = map.getStyle();
+    if (style && style.layers) {
+      style.layers.forEach((layer) => {
+        if (layer.id.startsWith('ortho-layer-')) {
+          const jobId = layer.id.replace('ortho-layer-', '');
+          if (!activeOrthoJobs.includes(jobId)) {
+            if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+            if (map.getSource(`ortho-source-${jobId}`)) map.removeSource(`ortho-source-${jobId}`);
+          }
+        }
+      });
+    }
+  }, [mapReady, activeOrthoJobs]);
 
   // Dynamic projection switching (lightweight — no terrain DEM)
   useEffect(() => {

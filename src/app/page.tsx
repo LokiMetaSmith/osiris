@@ -22,6 +22,7 @@ const CameraViewer = dynamic(() => import('@/components/CameraViewer'));
 const FmvViewer = dynamic(() => import('@/components/FmvViewer'));
 const OsintPanel = dynamic(() => import('@/components/OsintPanel'));
 const EntityGraphPanel = dynamic(() => import('@/components/EntityGraphPanel'));
+const PhotogrammetryPanel = dynamic(() => import('@/components/PhotogrammetryPanel'));
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -117,6 +118,8 @@ export default function Dashboard() {
   const [entityGraphTarget, setEntityGraphTarget] = useState<{ type: string; id: string; label?: string; properties?: Record<string, any> } | null>(null);
   const [demoMode, setDemoMode] = useState(false);
   const [osintTheme, setOsintTheme] = useState<'core'|'ghost'>('ghost');
+  const [showPhotogrammetry, setShowPhotogrammetry] = useState(false);
+  const [activeOrthoJobs, setActiveOrthoJobs] = useState<string[]>([]);
 
   useEffect(() => {
     document.body.className = osintTheme === 'core' ? '' : `theme-${osintTheme}`;
@@ -777,6 +780,7 @@ export default function Dashboard() {
           key={osintTheme}
           data={data}
           activeLayers={activeLayers}
+          activeOrthoJobs={activeOrthoJobs}
           projection={mapProjection}
           mapStyle={mapStyle === 'satellite' ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' : 'dark'}
           onEntityClick={handleEntityClick}
@@ -957,6 +961,12 @@ export default function Dashboard() {
         <div className="relative group">
           <button onClick={() => { setShowEntityGraph(!showEntityGraph); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showEntityGraph ? 'bg-[#D4AF37]/20' : 'hover:bg-white/10'}`}>
             <Network className={`w-4 h-4 ${showEntityGraph ? 'text-[var(--gold-primary)]' : 'text-white/60'}`} />
+          </button>
+        </div>
+
+        <div className="relative group">
+          <button title="Drone Photogrammetry & 3D Reality" onClick={() => { setShowPhotogrammetry(!showPhotogrammetry); setShowIntel(false); setShowMarkets(false); setShowAlerts(false); setShowEntityGraph(false); }} className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showPhotogrammetry ? 'bg-[#00E5FF]/20' : 'hover:bg-white/10'}`}>
+            <Layers className={`w-4 h-4 ${showPhotogrammetry ? 'text-[#00E5FF]' : 'text-white/60'}`} />
           </button>
         </div>
 
@@ -1227,6 +1237,24 @@ export default function Dashboard() {
         <EntityGraphPanel
           entity={entityGraphTarget}
           onClose={() => setShowEntityGraph(false)}
+        />
+      )}
+
+      {/* ── Photogrammetry & 3D Reality Panel ── */}
+      {showPhotogrammetry && (
+        <PhotogrammetryPanel
+          onClose={() => setShowPhotogrammetry(false)}
+          onFlyTo={(bounds) => {
+            const centerLng = (bounds[0] + bounds[2]) / 2;
+            const centerLat = (bounds[1] + bounds[3]) / 2;
+            setFlyToLocation({ lat: centerLat, lng: centerLng, zoom: 14, ts: Date.now() });
+          }}
+          activeOrthoJobs={activeOrthoJobs}
+          onToggleOrthoJob={(jobId) => {
+            setActiveOrthoJobs((prev) =>
+              prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+            );
+          }}
         />
       )}
 
