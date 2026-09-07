@@ -59,3 +59,56 @@ CREATE TABLE IF NOT EXISTS airspace_alerts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_alerts_triggered ON airspace_alerts (triggered_at DESC);
+
+-- 5. Pilots & Operators
+CREATE TABLE IF NOT EXISTS pilots (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    faa_cert_number VARCHAR(128),
+    cert_expiration_date DATE,
+    noaa_uxsoc_certified BOOLEAN DEFAULT FALSE,
+    flight_hours_logged NUMERIC(8,2) DEFAULT 0.0,
+    status VARCHAR(32) DEFAULT 'active' -- active, suspended, expired
+);
+
+-- 6. Airframes (Drones)
+CREATE TABLE IF NOT EXISTS drones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    registration_number VARCHAR(128) UNIQUE NOT NULL,
+    serial_number VARCHAR(128) UNIQUE NOT NULL,
+    make_model VARCHAR(128) NOT NULL,
+    airframe_type VARCHAR(64) NOT NULL, -- multirotor, fixed-wing, glider, hybrid
+    empty_weight_kg NUMERIC(6,2),
+    max_takeoff_weight_kg NUMERIC(6,2),
+    airworthiness_status VARCHAR(32) DEFAULT 'airworthy', -- airworthy, maintenance, grounded
+    last_inspection_date DATE,
+    -- Baseline Airworthiness Qualification (Part 1 & TP-01 to TP-04)
+    baseline_qualification JSONB DEFAULT '{}'::jsonb
+);
+
+-- 7. Flight Plans & Operations
+CREATE TABLE IF NOT EXISTS flight_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mission_name VARCHAR(255) NOT NULL,
+    pilot_id UUID REFERENCES pilots(id) ON DELETE SET NULL,
+    drone_id UUID REFERENCES drones(id) ON DELETE RESTRICT,
+    planned_start TIMESTAMPTZ,
+    planned_end TIMESTAMPTZ,
+    actual_start TIMESTAMPTZ,
+    actual_end TIMESTAMPTZ,
+    airspace_class VARCHAR(16),
+    max_altitude_ft_agl NUMERIC(8,2),
+    max_altitude_ft_msl NUMERIC(8,2),
+    laanc_auth_id VARCHAR(128),
+    coa_number VARCHAR(128),
+    geometry_geojson JSONB,
+    status VARCHAR(32) DEFAULT 'draft', -- draft, filed, active, completed, cancelled
+    -- Operational Qualifications & Part 2 (Pre-flight, TP-05 to TP-08)
+    pre_flight_compliance JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_flight_plans_status ON flight_plans(status);
+CREATE INDEX IF NOT EXISTS idx_flight_plans_drone_id ON flight_plans(drone_id);
+CREATE INDEX IF NOT EXISTS idx_flight_plans_pilot_id ON flight_plans(pilot_id);

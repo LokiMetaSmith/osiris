@@ -15,6 +15,7 @@ import ViewPresets from '@/components/ViewPresets';
 import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import GlobalStatusBar from '@/components/GlobalStatusBar';
 import LiveAlerts from '@/components/LiveAlerts';
+import FlightComplianceCard from '@/components/FlightComplianceCard';
 
 const OsintMap = dynamic(() => import('@/components/OsintMap'), { ssr: false });
 const LayerPanel = dynamic(() => import('@/components/LayerPanel'));
@@ -103,6 +104,7 @@ export default function Dashboard() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeCamera, setActiveCamera] = useState<any>(null);
   const [activeSensor, setActiveSensor] = useState<any>(null);
+  const [activeFlightCompliance, setActiveFlightCompliance] = useState<any>(null);
   const [spaceWeather, setSpaceWeather] = useState<any>(null);
   const [showLayers, setShowLayers] = useState(true);
   const [showMarkets, setShowMarkets] = useState(false);
@@ -299,7 +301,10 @@ export default function Dashboard() {
   // Entity click handler (hoisted from JSX to comply with Rules of Hooks - Fixes #113)
   const handleEntityClick = useCallback((entity: any) => {
     if (entity?.type === 'cctv') setActiveCamera(entity);
-    if (entity?.type === 'sensor' || entity?.source === 'FMV_MISB_FEED') setActiveSensor(entity);
+    if (entity?.type === 'sensor' || entity?.source === 'FMV_MISB_FEED') {
+      setActiveSensor(entity);
+      setActiveFlightCompliance(entity);
+    }
     if (entity?.type === 'live_news' && entity.url) {
       setLiveFeedUrl(entity.url);
       setLiveFeedName(entity.name);
@@ -954,6 +959,12 @@ export default function Dashboard() {
           </button>
           {/* Alerts Panel Slideout */}
           <AnimatePresence>
+            {activeFlightCompliance && (
+              <FlightComplianceCard
+                sensorId={activeFlightCompliance.id}
+                onClose={() => setActiveFlightCompliance(null)}
+              />
+            )}
             {showAlerts && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="absolute right-12 top-1/2 -translate-y-1/2 w-80">
                 <LiveAlerts data={data} onLocate={(lat, lng) => setFlyToLocation({ lat, lng, ts: Date.now() })} onWatchFeed={(url, name) => { setLiveFeedUrl(url); setLiveFeedName(name); }} />
