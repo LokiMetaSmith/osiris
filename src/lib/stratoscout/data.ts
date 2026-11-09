@@ -63,6 +63,45 @@ export interface CountyReportData {
   }[];
 }
 
+export type SpectralPalette = 'RGB_50CM' | 'NDVI_FUEL' | 'FLIR_IRONBOW';
+
+export interface WebhookDispatchPayload {
+  platform: 'D4H' | 'WebEOC' | 'ArcGIS';
+  incidentId: string;
+  incidentName: string;
+  timestamp: string;
+  jurisdiction: string;
+  emergencyDirector: string;
+  femaThreatCode: string;
+  coordinates: { lat: number; lng: number };
+  fuelMoisturePct: number;
+  structuresAtRisk: number;
+  recommendedAction: RecommendedAction;
+  gisFeatureLayerUrl: string;
+  cadDispatchStatus: 'DISPATCH_QUEUED' | 'CREW_STAGED' | 'WARNING_ISSUED';
+}
+
+export function generateWebhookPayload(
+  platform: 'D4H' | 'WebEOC' | 'ArcGIS',
+  sector: SectorTriageItem
+): WebhookDispatchPayload {
+  return {
+    platform,
+    incidentId: `INC-${sector.county === 'Payne County' ? 'PAYNE' : 'OKLA'}-${sector.id}`,
+    incidentName: `WILDFIRE MITIGATION: ${sector.sectorName}`,
+    timestamp: new Date().toISOString(),
+    jurisdiction: sector.county,
+    emergencyDirector: sector.contactDirector,
+    femaThreatCode: sector.threatType === '01 Fire Fuel Complex' ? 'FEMA-FIRE-VEG-01' : sector.threatType === '02 Surface Heat / Thermal' ? 'FEMA-FIRE-THERM-02' : 'FEMA-FIRE-WUI-03',
+    coordinates: { lat: sector.lat, lng: sector.lng },
+    fuelMoisturePct: sector.fuelMoisturePct,
+    structuresAtRisk: sector.structuresAtRisk,
+    recommendedAction: sector.recommendedAction,
+    gisFeatureLayerUrl: `https://gis.${sector.county.toLowerCase().replace(' ', '')}.gov/arcgis/rest/services/WildfireTriage/FeatureServer/0/${sector.id}`,
+    cadDispatchStatus: sector.recommendedAction === 'Pre-position Crew' ? 'CREW_STAGED' : sector.recommendedAction === 'Cut Firebreak' ? 'DISPATCH_QUEUED' : 'WARNING_ISSUED',
+  };
+}
+
 export const STRATOSCOUT_METRICS = {
   countyAnnualSubscriptionPrice: 15000, // $15,000/yr per V18 Business Plan
   oneTimeScanPrice: 1500, // $1,500 one-time project scan

@@ -15,6 +15,9 @@ export default function CountyReportModal({ county, onClose }: CountyReportModal
 
   const handleExport = (platform: string) => {
     setExportedFormat(platform);
+    if (platform === 'Printable PDF') {
+      window.print();
+    }
     setTimeout(() => {
       setExportedFormat(null);
     }, 3000);
@@ -132,6 +135,30 @@ export default function CountyReportModal({ county, onClose }: CountyReportModal
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* USFS / FEMA Community Wildfire Defense Grant Signature Block */}
+        <div className="p-3 rounded bg-black/60 border border-white/10 mb-4 grid grid-cols-2 gap-4 text-[9px]">
+          <div>
+            <div className="text-[var(--text-muted)] mb-1">COUNTY EMERGENCY MANAGEMENT CERTIFICATION:</div>
+            <div className="font-bold text-white uppercase">{report.directorName}</div>
+            <div className="text-[8px] text-gray-400 mt-1 italic">
+              "Attesting 50cm/px multi-spectral data verification for USFS Community Wildfire Defense Grant application."
+            </div>
+            <div className="mt-2 text-emerald-400 font-bold border-b border-dashed border-white/20 pb-1">
+              DIGITALLY SIGNED & VERIFIED ✓
+            </div>
+          </div>
+          <div>
+            <div className="text-[var(--text-muted)] mb-1">GRANT FUNDING ALLOCATION MATCH:</div>
+            <div className="font-bold text-[var(--gold-primary)]">{report.cwdgEligibility.maxGrantAmount} TOTAL ELIGIBLE</div>
+            <div className="text-[8px] text-gray-400 mt-1">
+              Federal Share (75%): {report.county === 'Payne County' ? '$1,837,500' : '$2,400,000'} • County Match (25%): {report.county === 'Payne County' ? '$612,500' : '$800,000'}
+            </div>
+            <div className="mt-2 text-cyan-300 font-bold border-b border-dashed border-white/20 pb-1">
+              FEMA HAZARD MITIGATION REGION 6 DOCKET
+            </div>
           </div>
         </div>
 
