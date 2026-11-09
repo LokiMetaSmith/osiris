@@ -15,6 +15,12 @@ import PriorityTriageQueue from '@/components/stratoscout/PriorityTriageQueue';
 import ChangeDetectionSlider from '@/components/stratoscout/ChangeDetectionSlider';
 import CountyReportModal from '@/components/stratoscout/CountyReportModal';
 import PitchWalkthroughController from '@/components/stratoscout/PitchWalkthroughController';
+import FlightPlaybackScrubber from '@/components/stratoscout/FlightPlaybackScrubber';
+import WebhookDispatchModal from '@/components/stratoscout/WebhookDispatchModal';
+import SpectralPaletteSelector from '@/components/stratoscout/SpectralPaletteSelector';
+import OfflineFieldPack from '@/components/stratoscout/OfflineFieldPack';
+import { SpectralPalette } from '@/lib/stratoscout/data';
+import { FlightTelemetryPoint, TELEMETRY_PROFILE } from '@/lib/stratoscout/telemetry-playback';
 import {
   Layers,
   Flame,
@@ -48,6 +54,15 @@ export default function StratoScoutCommandPage() {
   const [activeReportCounty, setActiveReportCounty] = useState<'Payne County' | 'Oklahoma County' | null>(null);
   const [showChangeDetection, setShowChangeDetection] = useState<boolean>(false);
   const [pitchStep, setPitchStep] = useState<number>(0);
+
+  // New Extension States
+  const [activeTelemetry, setActiveTelemetry] = useState<FlightTelemetryPoint>(TELEMETRY_PROFILE[0]);
+  const [showFlightPlayback, setShowFlightPlayback] = useState<boolean>(false);
+  const [spectralPalette, setSpectralPalette] = useState<SpectralPalette>('RGB_50CM');
+  const [showPaletteSelector, setShowPaletteSelector] = useState<boolean>(false);
+  const [webhookSector, setWebhookSector] = useState<SectorTriageItem | null>(null);
+  const [isOfflineMode, setIsOfflineMode] = useState<boolean>(false);
+  const [showOfflinePack, setShowOfflinePack] = useState<boolean>(false);
 
   // Map state centered over Oklahoma / Payne & Oklahoma counties
   const [flyToLocation, setFlyToLocation] = useState<{ lat: number; lng: number; zoom?: number; ts: number } | null>({
@@ -113,24 +128,24 @@ export default function StratoScoutCommandPage() {
 
   // Prepare sensor & spatial entities for the map view
   const mapData = useMemo(() => {
-    // Generate synthetic sensor marker for the StratoScout high-altitude glider
+    // Glider sensor driven by live flight telemetry playback
     const gliderSensor = {
       id: 'STRATO-GLIDER-01',
-      name: 'StratoScout Glider (50cm/px Multi-Spectral)',
+      name: `StratoScout Glider (${activeTelemetry.resolutionCmPx}cm/px ${spectralPalette})`,
       type: 'sensor',
       sensor_type: 'FMV',
       source: 'FMV_MISB_FEED',
-      lat: pitchStep === 2 ? 35.6528 : 36.0845,
-      lng: pitchStep === 2 ? -97.3822 : -97.1420,
-      alt: 28500,
-      heading: 205, // Following SW prevailing wind vector
-      battery: 94,
-      status: 'AIRBORNE_SCANNING',
+      lat: activeTelemetry.lat,
+      lng: activeTelemetry.lng,
+      alt: activeTelemetry.altFt,
+      heading: activeTelemetry.headingDeg,
+      battery: activeTelemetry.batteryPct,
+      status: activeTelemetry.phase,
       fov_polygon: [
-        [-97.39, 35.66],
-        [-97.37, 35.66],
-        [-97.37, 35.64],
-        [-97.39, 35.64],
+        [activeTelemetry.lng - 0.015, activeTelemetry.lat + 0.01],
+        [activeTelemetry.lng + 0.015, activeTelemetry.lat + 0.01],
+        [activeTelemetry.lng + 0.015, activeTelemetry.lat - 0.01],
+        [activeTelemetry.lng - 0.015, activeTelemetry.lat - 0.01],
       ],
     };
 
@@ -151,7 +166,7 @@ export default function StratoScoutCommandPage() {
       live_sensors: [gliderSensor],
       fires: hotspotEntities,
     };
-  }, [pitchStep, showThermalHotspots]);
+  }, [pitchStep, showThermalHotspots, activeTelemetry, spectralPalette]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#05070a] text-white font-mono select-none">
@@ -195,6 +210,41 @@ export default function StratoScoutCommandPage() {
               <strong className="text-[var(--gold-primary)]">${STRATOSCOUT_METRICS.countyAnnualSubscriptionPrice.toLocaleString()}/YR</strong>
             </span>
           </div>
+
+          <button
+            onClick={() => setShowFlightPlayback(!showFlightPlayback)}
+            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+              showFlightPlayback
+                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
+            }`}
+          >
+            <Play className="w-3.5 h-3.5 text-cyan-400" />
+            <span>FLIGHT SCRUBBER</span>
+          </button>
+
+          <button
+            onClick={() => setShowPaletteSelector(!showPaletteSelector)}
+            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+              showPaletteSelector
+                ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>SPECTRAL PALETTE ({spectralPalette.split('_')[0]})</span>
+          </button>
+
+          <button
+            onClick={() => setShowOfflinePack(!showOfflinePack)}
+            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+              isOfflineMode
+                ? 'bg-red-500/20 border-red-400 text-red-300'
+                : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
+            }`}
+          >
+            <span>{isOfflineMode ? 'FIELD DISCONNECTED' : 'FIELD PACK'}</span>
+          </button>
 
           <button
             onClick={() => setShowChangeDetection(!showChangeDetection)}
@@ -318,7 +368,39 @@ export default function StratoScoutCommandPage() {
           {/* Change Detection Popout (if toggled) */}
           {showChangeDetection && (
             <div className="absolute top-16 right-72 z-[250] pointer-events-auto">
-              <ChangeDetectionSlider onClose={() => setShowChangeDetection(false)} />
+              <ChangeDetectionSlider />
+            </div>
+          )}
+
+          {/* Multi-Spectral Palette Selector (if toggled) */}
+          {showPaletteSelector && (
+            <div className="absolute top-16 right-96 z-[250] pointer-events-auto">
+              <SpectralPaletteSelector
+                currentPalette={spectralPalette}
+                onChangePalette={setSpectralPalette}
+              />
+            </div>
+          )}
+
+          {/* Offline Field Command Pack (if toggled) */}
+          {showOfflinePack && (
+            <div className="absolute top-16 left-96 z-[250] pointer-events-auto">
+              <OfflineFieldPack
+                isOfflineMode={isOfflineMode}
+                onToggleOffline={() => setIsOfflineMode(!isOfflineMode)}
+              />
+            </div>
+          )}
+
+          {/* Flight Telemetry Playback Scrubber (if toggled) */}
+          {showFlightPlayback && (
+            <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[250] pointer-events-auto">
+              <FlightPlaybackScrubber
+                onTelemetryUpdate={(tel) => {
+                  setActiveTelemetry(tel);
+                  setFlyToLocation({ lat: tel.lat, lng: tel.lng, zoom: 12, ts: Date.now() });
+                }}
+              />
             </div>
           )}
         </div>
@@ -358,10 +440,21 @@ export default function StratoScoutCommandPage() {
         <PriorityTriageQueue
           sectors={visibleSectors}
           selectedSectorId={selectedSector?.id || null}
-          onSelectSector={handleSelectSector}
+          onSelectSector={(sec) => {
+            handleSelectSector(sec);
+            setWebhookSector(sec);
+          }}
           onOpenReportModal={(county) => setActiveReportCounty(county)}
         />
       </div>
+
+      {/* ── WEBHOOK DISPATCH MODAL (When Triggered) ── */}
+      {webhookSector && (
+        <WebhookDispatchModal
+          sector={webhookSector}
+          onClose={() => setWebhookSector(null)}
+        />
+      )}
 
       {/* ── COUNTY REPORT MODAL (When Triggered) ── */}
       {activeReportCounty && (
