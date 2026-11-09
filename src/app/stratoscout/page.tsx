@@ -19,6 +19,10 @@ import FlightPlaybackScrubber from '@/components/stratoscout/FlightPlaybackScrub
 import WebhookDispatchModal from '@/components/stratoscout/WebhookDispatchModal';
 import SpectralPaletteSelector from '@/components/stratoscout/SpectralPaletteSelector';
 import OfflineFieldPack from '@/components/stratoscout/OfflineFieldPack';
+import { FireSpreadHud } from '@/components/stratoscout/FireSpreadHud';
+import { GimbalFmvOverlay } from '@/components/stratoscout/GimbalFmvOverlay';
+import { CountyFleetManagerModal } from '@/components/stratoscout/CountyFleetManagerModal';
+import { generateFireSpreadProjection } from '@/lib/stratoscout/dispersion-model';
 import { SpectralPalette } from '@/lib/stratoscout/data';
 import { FlightTelemetryPoint, TELEMETRY_PROFILE } from '@/lib/stratoscout/telemetry-playback';
 import {
@@ -35,6 +39,9 @@ import {
   Play,
   RotateCcw,
   Sparkles,
+  Video,
+  BarChart3,
+  Radio,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -50,12 +57,13 @@ export default function StratoScoutCommandPage() {
   const [showWuiBorders, setShowWuiBorders] = useState<boolean>(true);
   const [showWindVectors, setShowWindVectors] = useState<boolean>(true);
   const [showThermalHotspots, setShowThermalHotspots] = useState<boolean>(true);
+  const [showFireSpread, setShowFireSpread] = useState<boolean>(true);
 
   const [activeReportCounty, setActiveReportCounty] = useState<'Payne County' | 'Oklahoma County' | null>(null);
   const [showChangeDetection, setShowChangeDetection] = useState<boolean>(false);
   const [pitchStep, setPitchStep] = useState<number>(0);
 
-  // New Extension States
+  // Advanced Extensions States
   const [activeTelemetry, setActiveTelemetry] = useState<FlightTelemetryPoint>(TELEMETRY_PROFILE[0]);
   const [showFlightPlayback, setShowFlightPlayback] = useState<boolean>(false);
   const [spectralPalette, setSpectralPalette] = useState<SpectralPalette>('RGB_50CM');
@@ -63,6 +71,17 @@ export default function StratoScoutCommandPage() {
   const [webhookSector, setWebhookSector] = useState<SectorTriageItem | null>(null);
   const [isOfflineMode, setIsOfflineMode] = useState<boolean>(false);
   const [showOfflinePack, setShowOfflinePack] = useState<boolean>(false);
+  const [showFmvGimbal, setShowFmvGimbal] = useState<boolean>(false);
+  const [showFleetManager, setShowFleetManager] = useState<boolean>(false);
+  const [fireSpreadHour, setFireSpreadHour] = useState<number>(2);
+
+  // Rothermel rate of spread & smoke dispersion model
+  const spreadProjection = useMemo(() => {
+    const originLat = selectedSector ? selectedSector.lat : 36.14;
+    const originLng = selectedSector ? selectedSector.lng : -97.10;
+    const fuelMoisture = selectedSector ? selectedSector.fuelMoisturePct : 6.2;
+    return generateFireSpreadProjection(originLat, originLng, 42, 40, fuelMoisture);
+  }, [selectedSector]);
 
   // Map state centered over Oklahoma / Payne & Oklahoma counties
   const [flyToLocation, setFlyToLocation] = useState<{ lat: number; lng: number; zoom?: number; ts: number } | null>({
@@ -101,6 +120,7 @@ export default function StratoScoutCommandPage() {
       setSelectedCounty('Payne County');
       setShowCorridor(true);
       setShowWindVectors(true);
+      setShowFireSpread(true);
       setFlyToLocation({ lat: 36.14, lng: -97.10, zoom: 10.5, ts: Date.now() });
     } else if (step === 2) {
       // Step 2: Glider scanning 100-mile corridor at 50cm/px down to Edmond
@@ -195,15 +215,11 @@ export default function StratoScoutCommandPage() {
         </div>
 
         {/* Center / Right controls */}
-        <div className="flex items-center gap-3 text-[11px]">
-          <div className="hidden lg:flex items-center gap-4 text-[9px] text-[var(--text-muted)]">
+        <div className="flex items-center gap-2 text-[11px]">
+          <div className="hidden lg:flex items-center gap-3 text-[9px] text-[var(--text-muted)] mr-2">
             <span>
               WEATHER WINDOW:{' '}
-              <strong className="text-red-400 font-bold">RED FLAG WARNING (GUSTS 38-42 MPH)</strong>
-            </span>
-            <span>
-              ANNUAL LAUNCH BUDGET:{' '}
-              <strong className="text-emerald-400">{STRATOSCOUT_METRICS.launchesCompleted}/52</strong>
+              <strong className="text-red-400 font-bold">RED FLAG (GUSTS 42 MPH)</strong>
             </span>
             <span>
               COUNTY TIER:{' '}
@@ -212,50 +228,66 @@ export default function StratoScoutCommandPage() {
           </div>
 
           <button
+            onClick={() => setShowFmvGimbal(true)}
+            className="px-2 py-1 rounded text-[10px] font-bold border border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-all flex items-center gap-1"
+          >
+            <Video className="w-3.5 h-3.5 text-emerald-400" />
+            <span>FMV GIMBAL</span>
+          </button>
+
+          <button
+            onClick={() => setShowFleetManager(true)}
+            className="px-2 py-1 rounded text-[10px] font-bold border border-cyan-500/40 bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition-all flex items-center gap-1"
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+            <span>FLEET MGR (52)</span>
+          </button>
+
+          <button
             onClick={() => setShowFlightPlayback(!showFlightPlayback)}
-            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+            className={`px-2 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 ${
               showFlightPlayback
                 ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                 : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
             }`}
           >
             <Play className="w-3.5 h-3.5 text-cyan-400" />
-            <span>FLIGHT SCRUBBER</span>
+            <span>SITL SCRUBBER</span>
           </button>
 
           <button
             onClick={() => setShowPaletteSelector(!showPaletteSelector)}
-            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+            className={`px-2 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 ${
               showPaletteSelector
                 ? 'bg-amber-500/20 border-amber-400 text-amber-300'
                 : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>SPECTRAL PALETTE ({spectralPalette.split('_')[0]})</span>
+            <span>PALETTE</span>
           </button>
 
           <button
             onClick={() => setShowOfflinePack(!showOfflinePack)}
-            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+            className={`px-2 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 ${
               isOfflineMode
                 ? 'bg-red-500/20 border-red-400 text-red-300'
                 : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
             }`}
           >
-            <span>{isOfflineMode ? 'FIELD DISCONNECTED' : 'FIELD PACK'}</span>
+            <span>{isOfflineMode ? 'OFFLINE' : 'FIELD PACK'}</span>
           </button>
 
           <button
             onClick={() => setShowChangeDetection(!showChangeDetection)}
-            className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1.5 ${
+            className={`px-2 py-1 rounded text-[10px] font-bold border transition-all flex items-center gap-1 ${
               showChangeDetection
                 ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                 : 'bg-black/40 border-white/20 text-gray-400 hover:border-white/40'
             }`}
           >
             <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-            <span>CHANGE DETECTION</span>
+            <span>CHANGE</span>
           </button>
         </div>
       </header>
@@ -328,6 +360,7 @@ export default function StratoScoutCommandPage() {
                 { label: 'Dry Fuel Load (NDVI Multispectral)', val: showFuelLoad, set: setShowFuelLoad, color: 'text-orange-400' },
                 { label: 'WUI High-Risk Structure Borders', val: showWuiBorders, set: setShowWuiBorders, color: 'text-purple-400' },
                 { label: 'Surface Heat & Smolder Detections', val: showThermalHotspots, set: setShowThermalHotspots, color: 'text-red-400' },
+                { label: 'Rothermel Fire Spread & Smoke Plume', val: showFireSpread, set: setShowFireSpread, color: 'text-amber-300' },
                 { label: '100-Mi Glide Flight Corridor', val: showCorridor, set: setShowCorridor, color: 'text-cyan-400' },
                 { label: 'Wind Vector & Spread Corridor', val: showWindVectors, set: setShowWindVectors, color: 'text-blue-400' },
               ].map(layer => (
@@ -346,6 +379,18 @@ export default function StratoScoutCommandPage() {
               ))}
             </div>
           </div>
+
+          {/* Rothermel Fire Spread & Smoke Plume HUD */}
+          {showFireSpread && (
+            <div className="absolute top-16 right-72 z-[190] pointer-events-auto max-w-sm">
+              <FireSpreadHud
+                projection={spreadProjection}
+                activeHour={fireSpreadHour}
+                onSelectHour={setFireSpreadHour}
+                onClose={() => setShowFireSpread(false)}
+              />
+            </div>
+          )}
 
           {/* Glide Corridor Waypoint Visualizer (when Corridor is ON) */}
           {showCorridor && (
@@ -447,6 +492,33 @@ export default function StratoScoutCommandPage() {
           onOpenReportModal={(county) => setActiveReportCounty(county)}
         />
       </div>
+
+      {/* ── FMV GIMBAL TACTICAL OVERLAY MODAL ── */}
+      {showFmvGimbal && (
+        <GimbalFmvOverlay
+          telemetry={{
+            ...activeTelemetry,
+            altitudeFt: activeTelemetry.altFt,
+            timeSeconds: 45,
+            windSpeedMph: 42,
+            windHeadingDeg: activeTelemetry.headingDeg,
+            gimbalPitchDeg: -35,
+          }}
+          selectedSectorName={selectedSector ? selectedSector.sectorName : 'Payne / Oklahoma County WUI Interface'}
+          onClose={() => setShowFmvGimbal(false)}
+        />
+      )}
+
+      {/* ── COUNTY FLEET & SUBSCRIPTION MANAGER MODAL ── */}
+      {showFleetManager && (
+        <CountyFleetManagerModal
+          onClose={() => setShowFleetManager(false)}
+          onSelectCounty={(cid) => {
+            if (cid === 'PAYNE') setSelectedCounty('Payne County');
+            if (cid === 'OKLAHOMA') setSelectedCounty('Oklahoma County');
+          }}
+        />
+      )}
 
       {/* ── WEBHOOK DISPATCH MODAL (When Triggered) ── */}
       {webhookSector && (
