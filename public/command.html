@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StratoScout Command — Oklahoma Wildfire Prevention & County Emergency Management</title>
+  <link rel="icon" href="/favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #05070a; color: #fff; font-family: monospace; overflow: hidden; }
+    #map { position: absolute; inset: 0; }
+    .glass-card { background: rgba(10, 15, 25, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .gold-accent { color: #d4af37; }
+    .cyan-accent { color: #00e5ff; }
+  </style>
+</head>
+<body class="relative w-full h-full select-none">
+  <!-- Map Canvas -->
+  <div id="map"></div>
+
+  <!-- Header -->
+  <header class="absolute top-0 left-0 right-0 z-30 h-12 bg-black/85 backdrop-blur-md border-b border-[#d4af37]/30 px-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/" class="px-2.5 py-1 rounded bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 transition-colors">
+        ← GLOBAL C2
+      </a>
+      <div class="h-4 w-[1px] bg-white/20"></div>
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+        <span class="font-bold tracking-wider text-sm gold-accent">STRATOSCOUT COMMAND</span>
+        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold">
+          OK-REGION ALPHA (PAYNE & OKLAHOMA COUNTY)
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 text-[10px]">
+      <span class="text-gray-400">ANNUAL TIER: <strong class="gold-accent">$15,000/YR</strong></span>
+      <span class="text-gray-400">LAUNCHES: <strong class="text-emerald-400">14 / 52</strong></span>
+      <a href="/stratoscout" class="px-3 py-1 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs transition-colors">
+        LAUNCH REACT APP →
+      </a>
+    </div>
+  </header>
+
+  <!-- Executive HUD Top Left -->
+  <div class="absolute top-16 left-4 z-20 w-80 glass-card p-3.5 space-y-3">
+    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+      <span class="font-bold text-xs gold-accent">EXECUTIVE PREVENTION HUD</span>
+      <span class="text-[9px] px-1.5 py-0.5 rounded bg-red-900/60 text-red-300 font-bold">RED FLAG WARNING</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-[10px]">
+      <div class="bg-black/50 p-2 rounded border border-white/10">
+        <div class="text-gray-400 text-[8px]">STRUCTURES AT RISK</div>
+        <div class="text-lg font-bold text-red-400">184</div>
+        <div class="text-[8px] text-gray-500">WUI High-Risk Borders</div>
+      </div>
+      <div class="bg-black/50 p-2 rounded border border-white/10">
+        <div class="text-gray-400 text-[8px]">50CM/PX SCANNED</div>
+        <div class="text-lg font-bold cyan-accent">1,420 <span class="text-xs">mi</span></div>
+        <div class="text-[8px] text-gray-500">Sub-Meter Ground Data</div>
+      </div>
+    </div>
+    <div class="space-y-1.5 text-[9px] text-gray-300 bg-black/40 p-2 rounded border border-white/5">
+      <div class="flex justify-between">
+        <span class="text-gray-400">Wind Dynamics:</span>
+        <span class="text-red-400 font-bold">SW 215° @ 28G38 MPH</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-400">Glide Corridor:</span>
+        <span class="cyan-accent font-bold">100-Mi OAIRE Route Active</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-400">Single Pane Consolidation:</span>
+        <span class="text-emerald-400 font-bold">Replaces 10–15 Tools</span>
+      </div>
+    </div>
+    <button onclick="window.location.href='/stratoscout'" class="w-full py-2 rounded bg-gradient-to-r from-amber-500 to-yellow-600 text-black font-extrabold text-[10px] tracking-wider text-center block">
+      OPEN FULL EMERGENCY COMMAND CENTER
+    </button>
+  </div>
+
+  <!-- Priority Queue Bottom -->
+  <div class="absolute bottom-4 left-4 right-4 z-20 glass-card p-3 max-h-48 overflow-y-auto">
+    <div class="flex justify-between items-center mb-2 border-b border-white/10 pb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full gold-accent bg-[#d4af37]"></span>
+        <span class="text-xs font-bold gold-accent">PRIORITY MITIGATION & TRIAGE QUEUE (PAYNE & OKLAHOMA COUNTIES)</span>
+      </div>
+      <span class="text-[9px] text-gray-400">3 CORE DETECTION MODES • LIVE TRIAGE</span>
+    </div>
+    <table class="w-full text-left text-[9px] border-collapse">
+      <thead>
+        <tr class="text-gray-400 border-b border-white/10">
+          <th class="py-1 px-2">SECTOR ID</th>
+          <th class="py-1 px-2">COUNTY / REGION</th>
+          <th class="py-1 px-2">DETECTION MODE</th>
+          <th class="py-1 px-2">SEVERITY</th>
+          <th class="py-1 px-2 text-right">STRUCTURES</th>
+          <th class="py-1 px-2 text-right">FUEL MOISTURE</th>
+          <th class="py-1 px-2">RECOMMENDED ACTION</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5">
+        <tr class="hover:bg-white/5 cursor-pointer">
+          <td class="py-1.5 px-2 cyan-accent font-bold">SEC-PAYNE-01</td>
+          <td class="py-1.5 px-2">Stillwater West / HWY 51 Corridor</td>
+          <td class="py-1.5 px-2 text-amber-300 font-bold">01 Fire Fuel Complex</td>
+          <td class="py-1.5 px-2 text-red-400 font-bold">CRITICAL</td>
+          <td class="py-1.5 px-2 text-right font-bold text-red-400">64</td>
+          <td class="py-1.5 px-2 text-right text-red-400">6.2%</td>
+          <td class="py-1.5 px-2 text-amber-400 font-bold">⚡ Cut Firebreak</td>
+        </tr>
+        <tr class="hover:bg-white/5 cursor-pointer">
+          <td class="py-1.5 px-2 cyan-accent font-bold">SEC-OK-01</td>
+          <td class="py-1.5 px-2">Edmond Arcadia WUI Border / I-35</td>
+          <td class="py-1.5 px-2 text-purple-300 font-bold">03 High-Risk WUI Borders</td>
+          <td class="py-1.5 px-2 text-red-400 font-bold">CRITICAL</td>
+          <td class="py-1.5 px-2 text-right font-bold text-red-400">89</td>
+          <td class="py-1.5 px-2 text-right text-red-400">5.9%</td>
+          <td class="py-1.5 px-2 text-amber-400 font-bold">⚡ Cut Firebreak</td>
+        </tr>
+        <tr class="hover:bg-white/5 cursor-pointer">
+          <td class="py-1.5 px-2 cyan-accent font-bold">SEC-PAYNE-03</td>
+          <td class="py-1.5 px-2">Perkins South Riverine Flank</td>
+          <td class="py-1.5 px-2 text-red-300 font-bold">02 Surface Heat / Thermal</td>
+          <td class="py-1.5 px-2 text-orange-400 font-bold">HIGH</td>
+          <td class="py-1.5 px-2 text-right font-bold text-red-400">28</td>
+          <td class="py-1.5 px-2 text-right">8.5%</td>
+          <td class="py-1.5 px-2 text-red-400 font-bold">🚒 Pre-position Crew</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://demotiles.maplibre.org/style.json',
+      center: [-97.25, 35.85],
+      zoom: 9
+    });
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+  </script>
+</body>
+</html>

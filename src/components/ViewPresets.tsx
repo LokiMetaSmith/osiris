@@ -8,6 +8,7 @@ interface ViewPresetsProps {
 }
 
 const PRESETS = [
+  { label: 'STRATOSCOUT OK', lat: 35.85, lng: -97.25, zoom: 9.2, icon: '🔥', hot: true, isStratoScout: true },
   { label: 'GLOBAL', lat: 20, lng: 0, zoom: 2.5, icon: '🌍' },
   { label: 'EUROPE', lat: 48, lng: 10, zoom: 4, icon: '🇪🇺' },
   { label: 'MIDDLE EAST', lat: 30, lng: 45, zoom: 4.5, icon: '🔥', hot: true },
@@ -41,12 +42,18 @@ export default function ViewPresets({ onNavigate }: ViewPresetsProps) {
         {PRESETS.map(p => (
           <button
             key={p.label}
-            onClick={() => onNavigate(p.lat, p.lng, p.zoom)}
-            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[10px] font-mono tracking-wider border border-transparent hover:border-[var(--border-primary)] hover:text-[var(--gold-primary)] transition-all hover:scale-[1.02] active:scale-[0.98] ${(p as any).hot ? 'text-[var(--alert-red)] hover:border-[var(--alert-red)]/30 hover:bg-[var(--alert-red)]/5' : 'text-[var(--text-muted)] hover:bg-[var(--hover-accent)]'}`}
+            onClick={() => {
+              if ((p as any).isStratoScout) {
+                window.location.href = '/stratoscout';
+              } else {
+                onNavigate(p.lat, p.lng, p.zoom);
+              }
+            }}
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-[10px] font-mono tracking-wider border border-transparent hover:border-[var(--border-primary)] hover:text-[var(--gold-primary)] transition-all hover:scale-[1.02] active:scale-[0.98] ${(p as any).isStratoScout ? 'bg-[var(--gold-primary)]/15 border-[var(--gold-primary)]/50 text-[var(--gold-primary)] font-bold' : (p as any).hot ? 'text-[var(--alert-red)] hover:border-[var(--alert-red)]/30 hover:bg-[var(--alert-red)]/5' : 'text-[var(--text-muted)] hover:bg-[var(--hover-accent)]'}`}
           >
             <span className="text-[11px] flex-shrink-0">{p.icon}</span>
             <span>{p.label}</span>
-            {(p as any).hot && <span className="w-1.5 h-1.5 rounded-full bg-[var(--alert-red)] animate-osint-pulse ml-auto flex-shrink-0" />}
+            {(p as any).isStratoScout ? <span className="text-[7px] bg-[var(--gold-primary)] text-black font-extrabold px-1 rounded ml-auto">C2</span> : (p as any).hot && <span className="w-1.5 h-1.5 rounded-full bg-[var(--alert-red)] animate-osint-pulse ml-auto flex-shrink-0" />}
           </button>
         ))}
       </div>
