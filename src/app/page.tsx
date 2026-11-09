@@ -886,7 +886,12 @@ export default function Dashboard() {
         <span className="text-[10px] font-bold tracking-[0.2em] text-[var(--text-muted)] opacity-50 ml-2">V.4.1</span>
 
 
-        <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' rel='noopener noreferrer' className="pointer-events-auto glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[8px] font-mono tracking-widest hover:opacity-80 transition-opacity border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10 ml-4 shadow-[0_0_10px_rgba(255,215,0,0.1)]">
+        <a href='/stratoscout' className="pointer-events-auto glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[8px] font-mono tracking-widest hover:opacity-80 transition-opacity border-red-500/60 bg-red-950/40 ml-3 shadow-[0_0_12px_rgba(255,61,61,0.25)]">
+          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-red-300 font-bold">STRATOSCOUT C2 (OK WILDFIRE)</span>
+        </a>
+
+        <a href='https://ko-fi.com/M8D41ZYW4Z' target='_blank' rel='noopener noreferrer' className="pointer-events-auto glass-panel px-3 py-1.5 flex items-center gap-1.5 text-[8px] font-mono tracking-widest hover:opacity-80 transition-opacity border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10 ml-2 shadow-[0_0_10px_rgba(255,215,0,0.1)]">
           <div className="w-1.5 h-1.5 rounded-full bg-[var(--gold-primary)] animate-osint-pulse" />
           <span className="text-[var(--gold-primary)] font-bold">SUPPORT PROJECT</span>
         </a>
