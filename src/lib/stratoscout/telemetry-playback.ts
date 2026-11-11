@@ -5,6 +5,8 @@
  * and navigation along the 100-mile Oklahoma wind corridor.
  */
 
+export type InterpolatedTelemetry = FlightTelemetryPoint;
+
 export interface FlightTelemetryPoint {
   timeSec: number;
   phase: 'ASCENT' | 'CORRIDOR_ENTRY' | 'SCANNING_CRUISE' | 'DESCENT_APPROACH' | 'RECOVERY_FLARE';

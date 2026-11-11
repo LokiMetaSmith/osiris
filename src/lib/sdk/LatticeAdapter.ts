@@ -190,19 +190,26 @@ export class LatticeAdapter {
     else if (domain === Domain.SEA) icon = 'dot-orange';
     else if (domain === Domain.SPACE) icon = 'dot-gold';
 
+    const heading = typeof track.kinematics?.heading_deg === 'number' && !isNaN(track.kinematics.heading_deg)
+      ? ((track.kinematics.heading_deg % 360) + 360) % 360
+      : undefined;
+
+    const rawSpeedMps = track.kinematics?.speed_mps;
+    const speed = typeof rawSpeedMps === 'number' && !isNaN(rawSpeedMps)
+      ? Math.max(0, rawSpeedMps * 1.94384) // m/s → knots, clamped to non-negative
+      : undefined;
+
     return {
       id: `lattice-${track.entityId}`,
-      name: track.displayName || `TRACK-${track.entityId.slice(0, 8)}`,
+      name: track.displayName || `TRACK-${(track.entityId || 'UNKNOWN').slice(0, 8)}`,
       domain,
       entityType: EntityType.TRACK,
       position: {
-        lat: track.position.latitude_deg,
-        lng: track.position.longitude_deg,
-        alt: track.position.altitude_hae_m,
-        heading: track.kinematics?.heading_deg,
-        speed: track.kinematics?.speed_mps
-          ? track.kinematics.speed_mps * 1.94384  // m/s → knots
-          : undefined,
+        lat: track.position?.latitude_deg ?? 0,
+        lng: track.position?.longitude_deg ?? 0,
+        alt: track.position?.altitude_hae_m,
+        heading,
+        speed,
       },
       threat,
       classification: Classification.UNCLASSIFIED,
@@ -216,14 +223,14 @@ export class LatticeAdapter {
       properties: {
         allegiance,
         trackType: track.trackType,
-        ...track.metadata,
+        ...(track.metadata || {}),
       },
       display: {
         color,
         icon,
         layerType: domain === Domain.AIR ? 'symbol' : 'circle',
-        glow: threat >= ThreatLevel.HIGH,
-        scale: threat >= ThreatLevel.CRITICAL ? 1.5 : 1.0,
+        glow: threat === ThreatLevel.HIGH || threat === ThreatLevel.CRITICAL,
+        scale: threat === ThreatLevel.CRITICAL ? 1.5 : 1.0,
       },
     };
   }

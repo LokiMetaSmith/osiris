@@ -18,7 +18,7 @@ export const GimbalFmvOverlay: React.FC<GimbalFmvOverlayProps> = ({
   const [laserArmed, setLaserArmed] = useState(true);
 
   // Derive simulated gimbal values
-  const slantRangeFt = Math.round(telemetry.altitudeFt / Math.sin(Math.abs(telemetry.gimbalPitchDeg || -30) * Math.PI / 180));
+  const slantRangeFt = Math.round((telemetry.altFt || 1000) / Math.sin(Math.abs(telemetry.gimbalPitchDeg || -30) * Math.PI / 180));
   const targetLat = (telemetry.lat + 0.0042).toFixed(5);
   const targetLng = (telemetry.lng + 0.0031).toFixed(5);
 
@@ -73,10 +73,10 @@ export const GimbalFmvOverlay: React.FC<GimbalFmvOverlayProps> = ({
           {/* Top-Left Telemetry */}
           <div className="absolute top-4 left-4 text-xs text-emerald-400 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] space-y-1">
             <div>UAV ID: <span className="text-white font-bold">STRATO-GLIDER-01</span></div>
-            <div>ALT: <span className="text-white">{telemetry.altitudeFt.toLocaleString()} FT MSL</span></div>
-            <div>IAS: <span className="text-white">{telemetry.airspeedKts} KTS</span></div>
-            <div>HDG: <span className="text-white">{telemetry.windHeadingDeg}°</span></div>
-            <div>WIND: <span className="text-cyan-300 font-bold">{telemetry.windSpeedMph} MPH @ 220°</span></div>
+            <div>ALT: <span className="text-white">{(telemetry.altFt ?? 0).toLocaleString()} FT MSL</span></div>
+            <div>IAS: <span className="text-white">{telemetry.groundSpeedKnots} KTS</span></div>
+            <div>HDG: <span className="text-white">{telemetry.headingDeg}°</span></div>
+            <div>WIND: <span className="text-cyan-300 font-bold">{telemetry.windSpeedMph} MPH @ {telemetry.windDirectionDeg}°</span></div>
           </div>
 
           {/* Top-Right Gimbal Telemetry */}
@@ -84,7 +84,7 @@ export const GimbalFmvOverlay: React.FC<GimbalFmvOverlayProps> = ({
             <div>GIMBAL PITCH: <span className="text-white">{telemetry.gimbalPitchDeg}°</span></div>
             <div>GIMBAL AZ: <span className="text-white">042° TRUE</span></div>
             <div>SLANT RANGE: <span className="text-white">{slantRangeFt.toLocaleString()} FT</span></div>
-            <div>GSD RESOLUTION: <span className="text-white">48.2 CM/PX</span></div>
+            <div>GSD RESOLUTION: <span className="text-white">{telemetry.resolutionCmPx} CM/PX</span></div>
             <div>BAND: <span className="text-amber-300 font-bold">{spectralMode} SPECTRAL</span></div>
           </div>
 
@@ -149,7 +149,7 @@ export const GimbalFmvOverlay: React.FC<GimbalFmvOverlayProps> = ({
 
           <div className="text-neutral-400 text-[11px] flex items-center gap-4">
             <span>FLIGHT PHASE: <strong className="text-white">{telemetry.phase}</strong></span>
-            <span>TIME: <strong className="text-cyan-400">T+{telemetry.timeSeconds}s</strong></span>
+            <span>TIME: <strong className="text-cyan-400">T+{telemetry.timeSec}s</strong></span>
           </div>
         </div>
       </div>

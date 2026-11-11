@@ -3,10 +3,11 @@ import { getFlightPlan, updateFlightPlanCompliance } from '@/lib/db/flight-ops-s
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const plan = await getFlightPlan(params.id);
+    const { id } = await context.params;
+    const plan = await getFlightPlan(id);
     if (!plan) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(plan);
   } catch (error) {
@@ -17,12 +18,13 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     const body = await request.json();
     if (body.pre_flight_compliance) {
-        const plan = await updateFlightPlanCompliance(params.id, body.pre_flight_compliance);
+        const plan = await updateFlightPlanCompliance(id, body.pre_flight_compliance);
         return NextResponse.json(plan);
     }
     return NextResponse.json({ error: 'Invalid update payload' }, { status: 400 });

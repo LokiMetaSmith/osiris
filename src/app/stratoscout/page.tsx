@@ -496,14 +496,7 @@ export default function StratoScoutCommandPage() {
       {/* ── FMV GIMBAL TACTICAL OVERLAY MODAL ── */}
       {showFmvGimbal && (
         <GimbalFmvOverlay
-          telemetry={{
-            ...activeTelemetry,
-            altitudeFt: activeTelemetry.altFt,
-            timeSeconds: 45,
-            windSpeedMph: 42,
-            windHeadingDeg: activeTelemetry.headingDeg,
-            gimbalPitchDeg: -35,
-          }}
+          telemetry={activeTelemetry}
           selectedSectorName={selectedSector ? selectedSector.sectorName : 'Payne / Oklahoma County WUI Interface'}
           onClose={() => setShowFmvGimbal(false)}
         />
