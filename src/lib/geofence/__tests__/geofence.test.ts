@@ -33,6 +33,7 @@ describe('Geofencing Engine', () => {
         speed: 15,
         battery: 85
       },
+      source: 'TEST_FEED',
       last_seen: new Date().toISOString()
     };
 

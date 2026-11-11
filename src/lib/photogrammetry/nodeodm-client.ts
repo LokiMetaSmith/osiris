@@ -65,7 +65,7 @@ export class NodeOdmClient {
     try {
       const formData = new FormData();
       images.forEach((img, idx) => {
-        const blob = new Blob([img.buffer]);
+        const blob = new Blob([new Uint8Array(img.buffer)]);
         formData.append('images', blob, img.name || `image_${idx}.jpg`);
       });
 

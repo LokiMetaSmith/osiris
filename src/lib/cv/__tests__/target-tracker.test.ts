@@ -16,6 +16,7 @@ describe('VMTI Target Geolocation & Tracker', () => {
       speed: 20,
       battery: 90
     },
+    source: 'TEST_FEED',
     last_seen: new Date().toISOString()
   };
 

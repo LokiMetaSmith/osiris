@@ -42,10 +42,40 @@ inMemoryGeofences.set('nfz-1', {
   ]
 });
 
-export async function saveSensorTelemetry(sensor: LiveSensor): Promise<void> {
+export function validateSensorTelemetry(sensor: LiveSensor): boolean {
+  if (!sensor || !sensor.id || !sensor.telemetry) return false;
+  const { lat, lng } = sensor.telemetry;
+  if (typeof lat !== 'number' || typeof lng !== 'number') return false;
+  if (isNaN(lat) || isNaN(lng)) return false;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
+  return true;
+}
+
+export async function saveSensorTelemetry(sensor: LiveSensor): Promise<boolean> {
+  if (!validateSensorTelemetry(sensor)) {
+    console.warn(`[SensorStore] Invalid telemetry rejected for sensor: ${sensor?.id}`);
+    return false;
+  }
+
+  const heading = sensor.telemetry.heading ?? 0;
+  const speed = Math.max(0, sensor.telemetry.speed ?? 0);
+  const battery = Math.min(100, Math.max(0, sensor.telemetry.battery ?? 100));
+  const alt = sensor.telemetry.alt ?? 0;
+  const lng = sensor.telemetry.lng;
+  const lat = sensor.telemetry.lat;
+
   // Update in-memory store
   sensorStore.set(sensor.id, {
     ...sensor,
+    telemetry: {
+      ...sensor.telemetry,
+      heading,
+      speed,
+      battery,
+      alt,
+      lat,
+      lng,
+    },
     last_seen: new Date().toISOString()
   });
 
@@ -76,13 +106,13 @@ export async function saveSensorTelemetry(sensor: LiveSensor): Promise<void> {
         sensor.id,
         sensor.name || `Drone-${sensor.id}`,
         sensor.type || 'drone',
-        sensor.heading || 0,
-        sensor.speed || 0,
-        sensor.battery || 100,
-        sensor.alt || 0,
+        heading,
+        speed,
+        battery,
+        alt,
         sensor.stream_url || null,
-        sensor.lng,
-        sensor.lat
+        lng,
+        lat
       ]);
 
       // Save to telemetry history
@@ -92,12 +122,12 @@ export async function saveSensorTelemetry(sensor: LiveSensor): Promise<void> {
       `;
       await client.query(historyQuery, [
         sensor.id,
-        sensor.heading || 0,
-        sensor.speed || 0,
-        sensor.battery || 100,
-        sensor.alt || 0,
-        sensor.lng,
-        sensor.lat
+        heading,
+        speed,
+        battery,
+        alt,
+        lng,
+        lat
       ]);
 
       await client.end();
@@ -105,6 +135,8 @@ export async function saveSensorTelemetry(sensor: LiveSensor): Promise<void> {
       console.warn('[PostGIS] DB persist fallback to in-memory store:', (err as Error).message);
     }
   }
+
+  return true;
 }
 
 export function getAllGeofences(): Geofence[] {
